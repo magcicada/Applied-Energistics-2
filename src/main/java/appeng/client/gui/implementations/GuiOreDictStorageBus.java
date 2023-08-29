@@ -34,7 +34,7 @@ public class GuiOreDictStorageBus extends AEBaseGui {
     private GuiImgButton partition;
     private GuiImgButton storageFilter;
     private GuiImgButton rwMode;
-    private static final Pattern ORE_DICTIONARY_FILTER = Pattern.compile("[(!]* *[0-9a-zA-Z*]* *\\)*( *[&|^]? *[(!]* *[0-9a-zA-Z*]* *\\)*)*");
+    private static final Pattern ORE_DICTIONARY_FILTER = Pattern.compile("[0-9a-zA-Z* &|^!()]*");
     private MEGuiTextField searchFieldInputs;
 
     public GuiOreDictStorageBus(final InventoryPlayer inventoryPlayer, final PartOreDicStorageBus te) {

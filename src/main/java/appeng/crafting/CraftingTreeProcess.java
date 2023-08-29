@@ -27,15 +27,11 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 import appeng.core.AEConfig;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
-import appeng.util.Platform;
-import appeng.util.item.AEItemStack;
 import com.google.common.collect.ImmutableCollection;
 import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
-import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map.Entry;
 
 
@@ -50,6 +46,7 @@ public class CraftingTreeProcess {
     boolean possible = true;
     private long crafts = 0;
     private long bytes = 0;
+    private ArrayList<IAEItemStack> containers;
 
     public CraftingTreeProcess(final ICraftingGrid cc, final CraftingJob job, final ICraftingPatternDetails details, final CraftingTreeNode craftingTreeNode, final int depth) {
         this.parent = craftingTreeNode;
@@ -198,32 +195,18 @@ public class CraftingTreeProcess {
     void request(final MECraftingInventory inv, final long amountOfTimes, final IActionSource src) throws CraftBranchFailure, InterruptedException {
         addProcess();
         this.job.handlePausing();
-        List<IAEItemStack> containerItems = null;
 
         // request and remove inputs...
         for (final Entry<CraftingTreeNode, Long> entry : this.nodes.object2LongEntrySet()) {
             final IAEItemStack stack = entry.getKey().request(inv, entry.getValue() * amountOfTimes, src);
-
-            if (this.details.isCraftable() && stack.getItem().hasContainerItem(stack.getDefinition())) {
-                final ItemStack is = Platform.getContainerItem(stack.createItemStack());
-                final IAEItemStack o = AEItemStack.fromItemStack(is);
-                if (o != null) {
-                    if (containerItems == null) {
-                        containerItems = new ArrayList<>();
-                    }
-                    this.bytes++;
-                    o.setCachedItemStack(is);
-                    containerItems.add(o);
-                }
-            }
         }
 
-        if (containerItems != null) {
-            for (IAEItemStack i : containerItems) {
-                inv.injectItems(i, Actionable.MODULATE, src);
+        if (this.containers != null) {
+            for (IAEItemStack iae : containers) {
+                inv.injectItems(iae, Actionable.MODULATE, src);
             }
+            containers = null;
         }
-
         // assume its possible.
 
         // add crafting results..
@@ -233,6 +216,13 @@ public class CraftingTreeProcess {
             inv.injectItems(o, Actionable.MODULATE, src);
         }
         this.crafts += amountOfTimes;
+    }
+
+    public void addContainers(IAEItemStack container) {
+        if (this.containers == null) {
+            this.containers = new ArrayList<>();
+        }
+        this.containers.add(container);
     }
 
     void dive(final CraftingJob job) {

@@ -162,7 +162,13 @@ public class ContainerMEPortableFluidCell extends AEBaseContainer implements IAE
             if (currentItem.isEmpty()) {
                 this.setValidContainer(false);
             } else if (!this.wirelessTerminalGUIObject.getItemStack().isEmpty() && currentItem != this.wirelessTerminalGUIObject.getItemStack()) {
-                if (!ItemStack.areItemsEqual(this.wirelessTerminalGUIObject.getItemStack(), currentItem)) {
+                if (ItemStack.areItemsEqual(this.wirelessTerminalGUIObject.getItemStack(), currentItem)) {
+                    if (wirelessTerminalGUIObject.isBaubleSlot()) {
+                        BaublesApi.getBaublesHandler(this.getPlayerInv().player).setStackInSlot(this.slot, this.wirelessTerminalGUIObject.getItemStack());
+                    } else {
+                        this.getPlayerInv().setInventorySlotContents(this.slot, this.wirelessTerminalGUIObject.getItemStack());
+                    }
+                } else {
                     this.setValidContainer(false);
                 }
             }

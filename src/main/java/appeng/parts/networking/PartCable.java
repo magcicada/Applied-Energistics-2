@@ -234,7 +234,7 @@ public class PartCable extends AEBasePart implements IPartCable {
                     howMany = Math.max(gc.getUsedChannels(), howMany);
                 }
 
-                data.setByte("usedChannels", (byte) howMany);
+                data.setInteger("usedChannels", howMany);
             }
         }
     }

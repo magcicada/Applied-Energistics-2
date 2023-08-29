@@ -37,7 +37,7 @@ import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
 public class ItemRepo {
 
     private final IItemList<IAEItemStack> list = AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class).createList();
-    private final ArrayList<IAEItemStack> view = new ArrayList<>();
+    private List<IAEItemStack> view = new ArrayList<>();
     private final IScrollSource src;
     private final ISortSource sortSrc;
 
@@ -55,6 +55,16 @@ public class ItemRepo {
     private IPartitionList<IAEItemStack> myPartitionList;
     private String innerSearch = "";
     private boolean hasPower;
+
+    private Enum lastView;
+    private Enum lastSearchMode;
+    private Enum lastSortBy;
+    private Enum lastSortDir;
+    private String lastSearch = "";
+
+    private boolean resort = true;
+    private boolean changed = false;
+
 
     public ItemRepo(final IScrollSource src, final ISortSource sortSrc) {
         this.src = src;
@@ -83,6 +93,8 @@ public class ItemRepo {
         } else {
             this.list.add(is);
         }
+
+        changed = true;
     }
 
     public long getItemCount(final IAEItemStack is) {
@@ -92,21 +104,87 @@ public class ItemRepo {
 
     public void setViewCell(final ItemStack[] list) {
         this.myPartitionList = ItemViewCell.createFilter(list);
-        this.updateView();
+        this.changed = true;
     }
 
     public void updateView() {
-        this.view.clear();
-
-        this.view.ensureCapacity(this.list.size());
 
         final Enum viewMode = this.sortSrc.getSortDisplay();
+
+        if (lastView != viewMode) {
+            resort = true;
+            lastView = viewMode;
+        }
+
         final Enum searchMode = AEConfig.instance().getConfigManager().getSetting(Settings.SEARCH_MODE);
-        final boolean needsZeroCopy = viewMode == ViewItems.CRAFTABLE;
+        if (lastSearchMode != searchMode) {
+            resort = true;
+            lastSearchMode = searchMode;
+        }
 
         if (searchMode == SearchBoxMode.JEI_AUTOSEARCH || searchMode == SearchBoxMode.JEI_MANUAL_SEARCH || searchMode == SearchBoxMode.JEI_AUTOSEARCH_KEEP || searchMode == SearchBoxMode.JEI_MANUAL_SEARCH_KEEP) {
             this.updateJEI(this.searchString);
         }
+
+        if (!lastSearch.equals(searchString)) {
+            resort = true;
+            lastSearch = searchString;
+        }
+
+        final Enum sortBy = this.sortSrc.getSortBy();
+        final Enum sortDir = this.sortSrc.getSortDir();
+
+        if (lastSortBy != sortBy) {
+            resort = true;
+            lastSortBy = sortBy;
+        }
+
+        if (lastSortDir != sortDir) {
+            resort = true;
+            lastSortDir = sortDir;
+        }
+
+        if (changed || resort) {
+            changed = false;
+            resort = false;
+
+            view = new ArrayList<>();
+
+            ItemSorters.setDirection((appeng.api.config.SortDir) sortDir);
+            ItemSorters.init();
+
+            Comparator<IAEItemStack> c = getComparator(sortBy);
+
+            for (IAEItemStack is : this.list) {
+                addIAE(is, viewMode);
+            }
+
+            view.sort(c);
+        }
+    }
+
+    private static Comparator<IAEItemStack> getComparator(Enum sortBy) {
+        Comparator<IAEItemStack> c;
+
+        if (sortBy == SortOrder.MOD) {
+            c = ItemSorters.CONFIG_BASED_SORT_BY_MOD;
+        } else if (sortBy == SortOrder.AMOUNT) {
+            c = ItemSorters.CONFIG_BASED_SORT_BY_SIZE;
+        } else if (sortBy == SortOrder.INVTWEAKS) {
+            if (InventoryBogoSortModule.isLoaded()) {
+                c = InventoryBogoSortModule.COMPARATOR;
+            } else {
+                c = ItemSorters.CONFIG_BASED_SORT_BY_INV_TWEAKS;
+            }
+        } else {
+            c = ItemSorters.CONFIG_BASED_SORT_BY_NAME;
+        }
+        return c;
+    }
+
+    private void addIAE(IAEItemStack is, Enum viewMode) {
+
+        final boolean needsZeroCopy = viewMode == ViewItems.CRAFTABLE;
 
         final boolean terminalSearchToolTips = AEConfig.instance().getConfigManager().getSetting(Settings.SEARCH_TOOLTIPS) != YesNo.NO;
 
@@ -129,76 +207,52 @@ public class ItemRepo {
             }
         }
 
-        boolean notDone = false;
-        for (IAEItemStack is : this.list) {
-            if (this.myPartitionList != null) {
-                if (!this.myPartitionList.isListed(is)) {
-                    continue;
-                }
-            }
-
-            if (viewMode == ViewItems.CRAFTABLE && !is.isCraftable()) {
-                continue;
-            }
-
-            if (viewMode == ViewItems.STORED && is.getStackSize() == 0) {
-                continue;
-            }
-
-            final String dspName = (searchMod ? Platform.getModId(is) : Platform.getItemDisplayName(is)).toLowerCase();
-            boolean foundMatchingItemStack = true;
-
-            for (String term : innerSearch.split(" ")) {
-                if (term.length() > 1 && (term.startsWith("-") || term.startsWith("!"))) {
-                    term = term.substring(1);
-                    if (dspName.contains(term)) {
-                        foundMatchingItemStack = false;
-                        break;
-                    }
-                } else if (!dspName.contains(term)) {
-                    foundMatchingItemStack = false;
-                    break;
-                }
-            }
-
-            if (terminalSearchToolTips && !foundMatchingItemStack) {
-                final List<String> tooltip = Platform.getTooltip(is);
-                for (final String line : tooltip) {
-                    if (m.matcher(line).find()) {
-                        foundMatchingItemStack = true;
-                        break;
-                    }
-                }
-            }
-
-            if (foundMatchingItemStack) {
-                if (needsZeroCopy) {
-                    is = is.copy();
-                    is.setStackSize(0);
-                }
-
-                this.view.add(is);
+        if (this.myPartitionList != null) {
+            if (!this.myPartitionList.isListed(is)) {
+                return;
             }
         }
 
-        final Enum SortBy = this.sortSrc.getSortBy();
-        final Enum SortDir = this.sortSrc.getSortDir();
+        if (viewMode == ViewItems.CRAFTABLE && !is.isCraftable()) {
+            return;
+        }
 
-        ItemSorters.setDirection((appeng.api.config.SortDir) SortDir);
-        ItemSorters.init();
+        if (viewMode == ViewItems.STORED && is.getStackSize() == 0) {
+            return;
+        }
 
-        if (SortBy == SortOrder.MOD) {
-            Collections.sort(this.view, ItemSorters.CONFIG_BASED_SORT_BY_MOD);
-        } else if (SortBy == SortOrder.AMOUNT) {
-            Collections.sort(this.view, ItemSorters.CONFIG_BASED_SORT_BY_SIZE);
-        } else if (SortBy == SortOrder.INVTWEAKS) {
-            if (InventoryBogoSortModule.isLoaded()) {
-                Collections.sort(this.view, InventoryBogoSortModule.COMPARATOR);
-            } else {
-                Collections.sort(this.view, ItemSorters.CONFIG_BASED_SORT_BY_INV_TWEAKS);
+        final String dspName = (searchMod ? Platform.getModId(is) : Platform.getItemDisplayName(is)).toLowerCase();
+        boolean foundMatchingItemStack = true;
+
+        for (String term : innerSearch.split(" ")) {
+            if (term.length() > 1 && (term.startsWith("-") || term.startsWith("!"))) {
+                term = term.substring(1);
+                if (dspName.contains(term)) {
+                    foundMatchingItemStack = false;
+                    break;
+                }
+            } else if (!dspName.contains(term)) {
+                foundMatchingItemStack = false;
+                break;
             }
-        } else {
-            Collections.sort(this.view, ItemSorters.CONFIG_BASED_SORT_BY_NAME);
+        }
+
+        if (terminalSearchToolTips && !foundMatchingItemStack) {
+            final List<String> tooltip = Platform.getTooltip(is);
+            for (final String line : tooltip) {
+                if (m.matcher(line).find()) {
+                    foundMatchingItemStack = true;
+                    break;
+                }
+            }
+        }
+
+        if (foundMatchingItemStack) {
+            if (needsZeroCopy) {
+                is = is.copy();
+                is.setStackSize(0);
+            }
+            this.view.add(is);
         }
     }
 

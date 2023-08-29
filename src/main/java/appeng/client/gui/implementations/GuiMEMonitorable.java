@@ -319,7 +319,6 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             this.searchField.setText(memoryText);
             this.searchField.selectAll();
             this.repo.setSearchString(memoryText);
-            this.repo.updateView();
             this.setScrollBar();
         }
 
@@ -381,7 +380,6 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         if (btn == 1 && this.searchField.isMouseIn(xCoord, yCoord)) {
             this.searchField.setText("");
             this.repo.setSearchString("");
-            this.repo.updateView();
             this.setScrollBar();
         }
 
@@ -476,7 +474,6 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
 
             if (this.searchField.textboxKeyTyped(character, key)) {
                 this.repo.setSearchString(this.searchField.getText());
-                this.repo.updateView();
                 this.setScrollBar();
                 // tell forge the key event is handled and should not be sent out
                 this.keyHandled = mouseInGui;

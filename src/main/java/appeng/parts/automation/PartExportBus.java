@@ -132,23 +132,25 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
                         continue;
                     }
 
-					if( this.craftOnly() )
-					{
-						this.didSomething = this.craftingTracker.handleCrafting( slotToExport, this.itemToSend, ais, destination, this.getTile().getWorld(), this.getProxy().getGrid(), cg, this.mySrc ) || this.didSomething;
-						continue;
-					}
+                    if (this.craftOnly()) {
+                        this.didSomething = this.craftingTracker.handleCrafting(slotToExport, this.itemToSend, ais, destination, this.getTile().getWorld(), this.getProxy().getGrid(), cg, this.mySrc) || this.didSomething;
+                        continue;
+                    }
 
                     final long before = this.itemToSend;
 
                     if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
                         for (final IAEItemStack o : ImmutableList.copyOf(inv.getStorageList().findFuzzy(ais, fzMode))) {
-                            this.pushItemIntoTarget(destination, energy, inv, o);
-                            if (this.itemToSend <= 0) {
-                                break;
+                            if (o.getStackSize() > 0) {
+                                this.pushItemIntoTarget(destination, energy, inv, o);
+                                if (this.itemToSend <= 0) {
+                                    break;
+                                }
                             }
                         }
                     } else {
-                        if (inv.getStorageList().findPrecise(ais) != null) {
+                        final IAEItemStack o = inv.getStorageList().findPrecise(ais);
+                        if (o != null && o.getStackSize() > 0) {
                             this.pushItemIntoTarget(destination, energy, inv, ais);
                         }
                     }

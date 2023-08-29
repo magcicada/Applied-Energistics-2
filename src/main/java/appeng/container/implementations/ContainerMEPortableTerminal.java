@@ -65,6 +65,9 @@ public class ContainerMEPortableTerminal extends ContainerMEMonitorable implemen
             this.slot = -1;
             this.lockPlayerInventorySlot(ip.currentItem);
         }
+
+        this.bindPlayerInventory(ip, 0, 0);
+
         this.wirelessTerminalGUIObject = guiObject;
         this.upgrades = new StackUpgradeInventory(wirelessTerminalGUIObject.getItemStack(), this, 2);
         this.loadFromNBT();
@@ -103,7 +106,13 @@ public class ContainerMEPortableTerminal extends ContainerMEMonitorable implemen
             if (currentItem.isEmpty()) {
                 this.setValidContainer(false);
             } else if (!this.wirelessTerminalGUIObject.getItemStack().isEmpty() && currentItem != this.wirelessTerminalGUIObject.getItemStack()) {
-                if (!ItemStack.areItemsEqual(this.wirelessTerminalGUIObject.getItemStack(), currentItem)) {
+                if (ItemStack.areItemsEqual(this.wirelessTerminalGUIObject.getItemStack(), currentItem)) {
+                    if (wirelessTerminalGUIObject.isBaubleSlot()) {
+                        BaublesApi.getBaublesHandler(this.getPlayerInv().player).setStackInSlot(this.slot, this.wirelessTerminalGUIObject.getItemStack());
+                    } else {
+                        this.getPlayerInv().setInventorySlotContents(this.slot, this.wirelessTerminalGUIObject.getItemStack());
+                    }
+                } else {
                     this.setValidContainer(false);
                 }
             }

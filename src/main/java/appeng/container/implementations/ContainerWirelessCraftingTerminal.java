@@ -50,7 +50,7 @@ public class ContainerWirelessCraftingTerminal extends ContainerMEPortableTermin
     private IRecipe currentRecipe;
 
     public ContainerWirelessCraftingTerminal(final InventoryPlayer ip, final WirelessTerminalGuiObject gui) {
-        super(ip, gui, true);
+        super(ip, gui, false);
 
         final IItemHandler crafting = this.craftingGrid;
 
@@ -62,6 +62,8 @@ public class ContainerWirelessCraftingTerminal extends ContainerMEPortableTermin
 
         this.addSlotToContainer(this.outputSlot = new SlotCraftingTerm(this.getPlayerInv().player, this.getActionSource(), this
                 .getPowerSource(), this.wirelessTerminalGUIObject, crafting, crafting, this.output, 131, -72 + 18, this));
+
+        this.bindPlayerInventory(ip, 0, 0);
 
         this.onCraftMatrixChanged(new WrapperInvItemHandler(crafting));
     }
@@ -86,6 +88,8 @@ public class ContainerWirelessCraftingTerminal extends ContainerMEPortableTermin
 
             this.outputSlot.putStack(craftingResult);
         }
+        
+        this.saveChanges();
     }
 
     @Override

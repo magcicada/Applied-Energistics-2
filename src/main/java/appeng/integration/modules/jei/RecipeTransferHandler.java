@@ -21,7 +21,6 @@ package appeng.integration.modules.jei;
 
 import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.implementations.ContainerPatternEncoder;
-import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.implementations.ContainerWirelessCraftingTerminal;
 import appeng.container.slot.SlotCraftingMatrix;
 import appeng.container.slot.SlotFakeCraftingMatrix;

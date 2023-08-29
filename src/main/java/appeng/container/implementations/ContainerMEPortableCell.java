@@ -36,7 +36,7 @@ public class ContainerMEPortableCell extends ContainerMEMonitorable implements I
     private int ticks = 0;
 
     public ContainerMEPortableCell(InventoryPlayer ip, IPortableCell guiObject) {
-        super(ip, guiObject, guiObject, true);
+        super(ip, guiObject, guiObject, false);
         if (guiObject != null) {
             final int slotIndex = ((IInventorySlotAware) guiObject).getInventorySlot();
             if (!((IInventorySlotAware) guiObject).isBaubleSlot()) {
@@ -47,6 +47,9 @@ public class ContainerMEPortableCell extends ContainerMEMonitorable implements I
             this.slot = -1;
             this.lockPlayerInventorySlot(ip.currentItem);
         }
+
+        this.bindPlayerInventory(ip, 0, 0);
+
         this.portableCell = guiObject;
     }
 

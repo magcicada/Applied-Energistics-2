@@ -305,6 +305,7 @@ public class PartInterface extends PartBasicState implements IGridTickable, ISto
             PlayerMainInvWrapper playerInv = new PlayerMainInvWrapper(player.inventory);
             final IMaterials materials = AEApi.instance().definitions().materials();
             int missingPatternsToEncode = 0;
+            int amountPatternSlots = 8 + this.getInstalledUpgrades(Upgrades.PATTERN_EXPANSION) * 9;
 
             for (int i = 0; i < inv.getSlots(); i++) {
                 if (target.getStackInSlot(i).getItem() instanceof ItemEncodedPattern) {
@@ -316,7 +317,7 @@ public class PartInterface extends PartBasicState implements IGridTickable, ISto
                 }
             }
 
-            for (int x = 0; x < tmp.getSlots(); x++) {
+            for (int x = 0; x < amountPatternSlots; x++) {
                 if (!tmp.getStackInSlot(x).isEmpty()) {
                     boolean found = false;
                     for (int i = 0; i < playerInv.getSlots(); i++) {

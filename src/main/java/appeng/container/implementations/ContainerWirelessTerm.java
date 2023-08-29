@@ -26,6 +26,6 @@ import net.minecraft.entity.player.InventoryPlayer;
 public class ContainerWirelessTerm extends ContainerMEPortableTerminal {
 
     public ContainerWirelessTerm(final InventoryPlayer ip, final WirelessTerminalGuiObject gui) {
-        super(ip, gui, true);
+        super(ip, gui, false);
     }
 }

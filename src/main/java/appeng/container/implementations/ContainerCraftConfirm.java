@@ -23,6 +23,7 @@ import appeng.api.AEApi;
 import appeng.api.config.Actionable;
 import appeng.api.config.SecurityPermissions;
 import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridNode;
 import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.api.networking.crafting.ICraftingJob;
@@ -125,7 +126,19 @@ public class ContainerCraftConfirm extends AEBaseContainer {
             return;
         }
 
-        final ICraftingGrid cc = this.getGrid().getCache(ICraftingGrid.class);
+        final IActionHost h = ((IActionHost) this.getTarget());
+        if (h == null) {
+            this.setValidContainer(false);
+            return;
+        }
+        IGridNode node = h.getActionableNode();
+        if (node == null) {
+            this.setValidContainer(false);
+            return;
+        }
+        IGrid grid = node.getGrid();
+
+        final ICraftingGrid cc = grid.getCache(ICraftingGrid.class);
         final ImmutableSet<ICraftingCPU> cpuSet = cc.getCpus();
 
         int matches = 0;
@@ -199,7 +212,7 @@ public class ContainerCraftConfirm extends AEBaseContainer {
                         p.reset();
                         p.setStackSize(out.getCountRequestable());
 
-                        final IStorageGrid sg = this.getGrid().getCache(IStorageGrid.class);
+                        final IStorageGrid sg = grid.getCache(IStorageGrid.class);
                         final IMEInventory<IAEItemStack> items = sg.getInventory(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class));
 
                         IAEItemStack m = null;
@@ -252,11 +265,6 @@ public class ContainerCraftConfirm extends AEBaseContainer {
         this.verifyPermissions(SecurityPermissions.CRAFT, false);
     }
 
-    private IGrid getGrid() {
-        final IActionHost h = ((IActionHost) this.getTarget());
-        return h.getActionableNode().getGrid();
-    }
-
     private boolean cpuMatches(final ICraftingCPU c) {
         return c.getAvailableStorage() >= this.getUsedBytes() && !c.isBusy();
     }
@@ -301,12 +309,22 @@ public class ContainerCraftConfirm extends AEBaseContainer {
             originalGui = GuiBridge.GUI_EXPANDED_PROCESSING_PATTERN_TERMINAL;
         }
 
+        final IActionHost h = ((IActionHost) this.getTarget());
+        if (h == null) {
+            return;
+        }
+        IGridNode node = h.getActionableNode();
+        if (node == null) {
+            return;
+        }
+        IGrid grid = node.getGrid();
+
         if (this.result != null && !this.isSimulation()) {
-            final ICraftingGrid cc = this.getGrid().getCache(ICraftingGrid.class);
+            final ICraftingGrid cc = grid.getCache(ICraftingGrid.class);
             final ICraftingLink g = cc.submitJob(this.result, null, this.getSelectedCpu() == -1 ? null : this.cpus.get(this.getSelectedCpu()).getCpu(), true, this.getActionSrc());
             this.setAutoStart(false);
             if (g == null) {
-                this.setJob(cc.beginCraftingJob(this.getWorld(), this.getGrid(), this.getActionSrc(), this.result.getOutput(), null));
+                this.setJob(cc.beginCraftingJob(this.getWorld(), grid, this.getActionSrc(), this.result.getOutput(), null));
             } else if (originalGui != null && this.getOpenContext() != null) {
                 final TileEntity te = this.getOpenContext().getTile();
                 if (te != null) {

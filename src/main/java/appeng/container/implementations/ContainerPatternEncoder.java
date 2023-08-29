@@ -191,6 +191,9 @@ public abstract class ContainerPatternEncoder extends ContainerMEMonitorable imp
             }
             this.detectAndSendChanges();
         }
+        if (s == this.craftSlot && Platform.isClient()) {
+            this.getAndUpdateOutput();
+        }
     }
 
     public void encodeAndMoveToInventory() {

@@ -47,7 +47,8 @@ public class GridConnection implements IGridConnection, IPathItem {
     private static final String EXISTING_CONNECTION_MESSAGE = "Connection between node [machine=%s, %s] and [machine=%s, %s] on [%s] already exists.";
 
     private static final MENetworkChannelsChanged EVENT = new MENetworkChannelsChanged();
-    private int channelData = 0;
+    private int usedChannels = 0;
+    private int lastUsedChannels = 0;
     private Object visitorIterationNumber = null;
     private GridNode sideA;
     private AEPartLocation fromAtoB;
@@ -118,7 +119,7 @@ public class GridConnection implements IGridConnection, IPathItem {
 
     @Override
     public int getUsedChannels() {
-        return (this.channelData >> 8) & 0xff;
+        return usedChannels;
     }
 
     @Override
@@ -132,7 +133,7 @@ public class GridConnection implements IGridConnection, IPathItem {
     @Override
     public void setControllerRoute(final IPathItem fast, final boolean zeroOut) {
         if (zeroOut) {
-            this.channelData &= ~0xff;
+            this.lastUsedChannels = 0;
         }
 
         if (this.sideB == fast) {
@@ -145,7 +146,7 @@ public class GridConnection implements IGridConnection, IPathItem {
 
     @Override
     public boolean canSupportMoreChannels() {
-        return this.getLastUsedChannels() < 32; // max, PERIOD.
+        return this.getLastUsedChannels() < AEConfig.instance().getDenseChannelCapacity(); // max, PERIOD.
     }
 
     @Override
@@ -155,7 +156,7 @@ public class GridConnection implements IGridConnection, IPathItem {
 
     @Override
     public void incrementChannelCount(final int usedChannels) {
-        this.channelData += usedChannels;
+        this.lastUsedChannels += usedChannels;
     }
 
     @Override
@@ -166,8 +167,7 @@ public class GridConnection implements IGridConnection, IPathItem {
     @Override
     public void finalizeChannels() {
         if (this.getUsedChannels() != this.getLastUsedChannels()) {
-            this.channelData &= 0xff;
-            this.channelData |= this.channelData << 8;
+            this.usedChannels = this.lastUsedChannels;
 
             if (this.sideA.getInternalGrid() != null) {
                 this.sideA.getInternalGrid().postEventTo(this.sideA, EVENT);
@@ -180,7 +180,7 @@ public class GridConnection implements IGridConnection, IPathItem {
     }
 
     private int getLastUsedChannels() {
-        return this.channelData & 0xff;
+        return lastUsedChannels;
     }
 
     Object getVisitorIterationNumber() {

@@ -48,7 +48,7 @@ import java.util.*;
 
 public class GridNode implements IGridNode, IPathItem {
     private static final MENetworkChannelsChanged EVENT = new MENetworkChannelsChanged();
-    private static final int[] CHANNEL_COUNT = {0, 8, 32};
+    private static final int[] CHANNEL_COUNT = {0, AEConfig.instance().getNormalChannelCapacity(), AEConfig.instance().getDenseChannelCapacity()};
 
     private final List<IGridConnection> connections = new ArrayList<>();
     private final IGridBlock gridProxy;
@@ -77,7 +77,7 @@ public class GridNode implements IGridNode, IPathItem {
     }
 
     public int usedChannels() {
-        return this.lastUsedChannels;
+        return this.usedChannels;
     }
 
     Class<? extends IGridHost> getMachineClass() {
@@ -545,17 +545,13 @@ public class GridNode implements IGridNode, IPathItem {
             return;
         }
 
-        if (this.getLastUsedChannels() != this.getUsedChannels()) {
+        if (this.lastUsedChannels != this.usedChannels) {
             this.lastUsedChannels = this.usedChannels;
 
             if (this.getInternalGrid() != null) {
                 this.getInternalGrid().postEventTo(this, EVENT);
             }
         }
-    }
-
-    private int getLastUsedChannels() {
-        return this.lastUsedChannels;
     }
 
     public long getLastSecurityKey() {

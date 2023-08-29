@@ -74,13 +74,11 @@ public class MultiCraftingTracker {
 
     public boolean handleCrafting(final int x, final long itemToCraft, final IAEItemStack ais, final InventoryAdaptor d, final World w, final IGrid g, final ICraftingGrid cg, final IActionSource mySrc) {
         if (ais != null) {
-            ItemStack inputStack = ais.getCachedItemStack(ais.getStackSize());
+            ItemStack inputStack = ais.createItemStack();
 
             ItemStack remaining = d.simulateAdd(inputStack);
 
             if (remaining.isEmpty()) {
-                ais.setCachedItemStack(inputStack);
-
                 final Future<ICraftingJob> craftingJob = this.getJob(x);
 
                 if (this.getLink(x) != null) {
@@ -117,8 +115,6 @@ public class MultiCraftingTracker {
                         this.setJob(x, cg.beginCraftingJob(w, g, mySrc, aisC, null));
                     }
                 }
-            } else {
-                ais.setCachedItemStack(remaining);
             }
         }
         return false;

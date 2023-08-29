@@ -43,12 +43,12 @@ public class ChannelInfoProvider implements IPartProbInfoProvider {
         }
         if (part instanceof PartDenseCableSmart || part instanceof PartCableSmart) {
             final int usedChannels;
-            final int maxChannels = (part instanceof PartDenseCableSmart) ? 32 : 8;
+            final int maxChannels = (part instanceof PartDenseCableSmart) ? AEConfig.instance().getDenseChannelCapacity() : AEConfig.instance().getNormalChannelCapacity();
 
             if (part.getGridNode().isActive()) {
                 final NBTTagCompound tmp = new NBTTagCompound();
                 part.writeToNBT(tmp);
-                usedChannels = tmp.getByte("usedChannels");
+                usedChannels = tmp.getInteger("usedChannels");
             } else {
                 usedChannels = 0;
             }

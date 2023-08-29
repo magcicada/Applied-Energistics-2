@@ -43,8 +43,8 @@ import java.util.stream.Stream;
 
 public final class AEConfig extends Configuration implements IConfigurableObject, IConfigManagerHost {
 
-    public static final String VERSION = "@version@";
-    public static final String CHANNEL = "@aechannel@";
+    public static final String VERSION = appeng.Tags.VERSION;
+    public static final String CHANNEL = appeng.Tags.AECHANNEL;
     public static final String PACKET_CHANNEL = "AE";
     // Tunnels
     public static final double TUNNEL_POWER_LOSS = 0.05;
@@ -83,6 +83,7 @@ public final class AEConfig extends Configuration implements IConfigurableObject
     private int craftingCalculationTimePerTick = 5;
     private PowerUnits selectedPowerUnit = PowerUnits.AE;
     private boolean showCraftableTooltip = true;
+
     // Spatial IO/Dimension
     private int storageProviderID = -1;
     private int storageDimensionID = -1;
@@ -122,6 +123,9 @@ public final class AEConfig extends Configuration implements IConfigurableObject
     private int maxControllerSizeY = 7;
     private int maxControllerSizeZ = 7;
 
+    private int normalChannelCapacity = 8;
+    private int denseChannelCapacity = 32;
+
     private AEConfig(final File configFile) {
         super(configFile);
         this.configFile = configFile;
@@ -139,6 +143,8 @@ public final class AEConfig extends Configuration implements IConfigurableObject
         CondenserOutput.SINGULARITY.requiredPower = this.get("Condenser", "Singularity", 256000).getInt(256000);
 
         this.removeCrashingItemsOnLoad = this.get("general", "removeCrashingItemsOnLoad", false, "Will auto-remove items that crash when being loaded from storage. This will destroy those items instead of crashing the game!").getBoolean();
+        this.normalChannelCapacity = Math.min(this.get("general", "normalChannelCapacity", this.normalChannelCapacity, "Max channel number may not exceed 256").getInt(this.normalChannelCapacity), 256);
+        this.denseChannelCapacity = Math.min(this.get("general", "denseChannelCapacity", this.denseChannelCapacity, "Max channel number may not exceed 256").getInt(this.denseChannelCapacity), 256);
 
         this.setCategoryComment("BlockingMode", "Map of items to not block when blockingmode is enabled.\n[modid]\nmodid:item:metadata(optional,default:0)\nSupports more than one modid, so you can block different things between, for example, gregtech or enderio");
         this.nonBlockingItems = this.get("BlockingMode", "nonBlockingItems", nonBlockingItems, "NonBlockingItems").getStringList();
@@ -188,6 +194,7 @@ public final class AEConfig extends Configuration implements IConfigurableObject
         this.maxControllerSizeX = Math.min(Math.max(this.get("ControllerSize", "maxControllerSizeX", this.maxControllerSizeX).getInt(this.maxControllerSizeX), 1), 63);
         this.maxControllerSizeY = Math.min(Math.max(this.get("ControllerSize", "maxControllerSizeY", this.maxControllerSizeY).getInt(this.maxControllerSizeY), 1), 63);
         this.maxControllerSizeZ = Math.min(Math.max(this.get("ControllerSize", "maxControllerSizeZ", this.maxControllerSizeZ).getInt(this.maxControllerSizeZ), 1), 63);
+
 
         this.clientSync();
 
@@ -675,5 +682,13 @@ public final class AEConfig extends Configuration implements IConfigurableObject
 
     public int getMaxControllerSizeZ() {
         return this.maxControllerSizeZ;
+    }
+
+    public int getNormalChannelCapacity() {
+        return this.normalChannelCapacity;
+    }
+
+    public int getDenseChannelCapacity() {
+        return this.denseChannelCapacity;
     }
 }

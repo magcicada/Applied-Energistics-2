@@ -29,6 +29,8 @@ import appeng.helpers.InvalidPatternHelper;
 import appeng.helpers.PatternHelper;
 import appeng.items.AEBaseItem;
 import appeng.util.Platform;
+import appeng.util.item.ItemStackHashStrategy;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -45,12 +47,12 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
-
 
 public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternItem {
+
+    private static final ItemStackHashStrategy hashStrategy = ItemStackHashStrategy.comparingAllButCount();
     // rather simple client side caching.
-    private static final Map<ItemStack, ItemStack> SIMPLE_CACHE = new WeakHashMap<>();
+    private static final Map<ItemStack, ItemStack> SIMPLE_CACHE = new Object2ObjectOpenCustomHashMap<>(hashStrategy);
 
     public ItemEncodedPattern() {
         this.setMaxStackSize(64);
@@ -70,6 +72,7 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
 
     private boolean clearPattern(final ItemStack stack, final EntityPlayer player) {
         if (player.isSneaking()) {
+            SIMPLE_CACHE.remove(stack);
             if (Platform.isClient()) {
                 return false;
             }

@@ -15,41 +15,40 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Applied Energistics 2.  If not, see <http://www.gnu.org/licenses/lgpl>.
  */
- 
-task wrapper(type: Wrapper) {
-    gradleVersion = "2.14"
-}
 
 // HWYLA
-task installHwyla(type: Copy, dependsOn: "deinstallHwyla") {
+tasks.register('installHwyla', Copy) {
+    dependsOn "deinstallHwyla"
     from { configurations.mods }
     include "**/*Hwyla*.jar"
-    into file(minecraft.runDir + "/mods")
+    into file("/run/mods")
 }
 
-task deinstallHwyla(type: Delete) {
-    delete fileTree(dir: minecraft.runDir + "/mods", include: "*Hwyla*.jar")
+tasks.register('deinstallHwyla', Delete) {
+    delete fileTree(dir: "/run/mods", include: "*Hwyla*.jar")
 }
 
 // IC2
-task installIC2(type: Copy, dependsOn: "deinstallIC2") {
+tasks.register('installIC2', Copy) {
+    dependsOn "deinstallIC2"
     from { configurations.mods }
     include "**/*industrialcraft-2*.jar"
-    into file(minecraft.runDir + "/mods")
+    into file("/run/mods")
 }
 
-task deinstallIC2(type: Delete) {
-    delete fileTree(dir: minecraft.runDir + "/mods", include: "*industrialcraft-2*.jar")
+tasks.register('deinstallIC2', Delete) {
+    delete fileTree(dir: "/run/mods", include: "*industrialcraft-2*.jar")
 }
 
 // TOP
-task installTop(type: Copy, dependsOn: ["deinstallTop"]) {
+tasks.register('installTop', Copy) {
+    dependsOn["deinstallTop"]
     from { configurations.mods }
     include "**/*TheOneProbe*.jar"
-    into file(minecraft.runDir + "/mods")
+    into file("/run/mods")
 }
 
-task deinstallTop(type: Delete) {
-    delete fileTree(dir: minecraft.runDir + "/mods", include: "*TheOneProbe*.jar")
+tasks.register('deinstallTop', Delete) {
+    delete fileTree(dir: "/run/mods", include: "*TheOneProbe*.jar")
 }
 

@@ -200,6 +200,9 @@ public class PacketJEIRecipe extends AppEngPacket {
                                         if (request.getItem().isDamageable() || Platform.isGTDamageableItem(request.getItem())) {
                                             Collection<IAEItemStack> outList = inv.getInventory(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class)).getStorageList().findFuzzy(request, FuzzyMode.IGNORE_ALL);
                                             for (IAEItemStack is : outList) {
+                                                if (is.getStackSize() == 0) {
+                                                    continue;
+                                                }
                                                 if (Platform.isGTDamageableItem(request.getItem())) {
                                                     if (!(is.getDefinition().getMetadata() == request.getDefinition().getMetadata())) {
                                                         continue;

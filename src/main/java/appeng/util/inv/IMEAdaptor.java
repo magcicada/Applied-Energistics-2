@@ -113,7 +113,7 @@ public class IMEAdaptor extends InventoryAdaptor {
         IAEItemStack out = null;
 
         for (final IAEItemStack req : ImmutableList.copyOf(this.getList().findFuzzy(reqFilter, fuzzyMode))) {
-            if (req != null) {
+            if (req != null && req.getStackSize() > 0) {
                 req.setStackSize(amount);
                 out = this.target.extractItems(req, type, this.src);
                 if (out != null) {

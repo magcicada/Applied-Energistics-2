@@ -26,7 +26,8 @@ import appeng.core.localization.WailaText;
 import appeng.parts.networking.PartCableSmart;
 import appeng.parts.networking.PartDenseCableSmart;
 import it.unimi.dsi.fastutil.objects.Object2ByteMap;
-import it.unimi.dsi.fastutil.objects.Object2ByteOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -59,7 +60,7 @@ public final class ChannelWailaDataProvider extends BasePartWailaDataProvider {
      * <p/>
      * The cache will be updated from the server.
      */
-    private final Object2ByteMap<IPart> cache = new Object2ByteOpenHashMap<>();
+    private final Object2IntMap<IPart> cache = new Object2IntOpenHashMap<>();
 
     /**
      * Adds the used and max channel to the tool tip
@@ -78,10 +79,10 @@ public final class ChannelWailaDataProvider extends BasePartWailaDataProvider {
         if (part instanceof PartCableSmart || part instanceof PartDenseCableSmart) {
             final NBTTagCompound tag = accessor.getNBTData();
 
-            final byte usedChannels = this.getUsedChannels(part, tag, this.cache);
+            final int usedChannels = this.getUsedChannels(part, tag, this.cache);
 
             if (usedChannels >= 0) {
-                final byte maxChannels = (byte) ((part instanceof PartDenseCableSmart) ? 32 : 8);
+                final int maxChannels = ((part instanceof PartDenseCableSmart) ? AEConfig.instance().getDenseChannelCapacity() : AEConfig.instance().getNormalChannelCapacity());
 
                 final String formattedToolTip = String.format(WailaText.Channels.getLocal(), usedChannels, maxChannels);
                 currentToolTip.add(formattedToolTip);
@@ -102,11 +103,11 @@ public final class ChannelWailaDataProvider extends BasePartWailaDataProvider {
      * @param cache cache with previous knowledge
      * @return used channels on the cable
      */
-    private byte getUsedChannels(final IPart part, final NBTTagCompound tag, final Object2ByteMap<IPart> cache) {
-        final byte usedChannels;
+    private int getUsedChannels(final IPart part, final NBTTagCompound tag, final Object2IntMap<IPart> cache) {
+        final int usedChannels;
 
         if (tag.hasKey(ID_USED_CHANNELS)) {
-            usedChannels = tag.getByte(ID_USED_CHANNELS);
+            usedChannels = tag.getInteger(ID_USED_CHANNELS);
             this.cache.put(part, usedChannels);
         } else if (this.cache.containsKey(part)) {
             usedChannels = this.cache.get(part);
@@ -139,9 +140,9 @@ public final class ChannelWailaDataProvider extends BasePartWailaDataProvider {
             part.writeToNBT(tempTag);
 
             if (tempTag.hasKey(ID_USED_CHANNELS)) {
-                final byte usedChannels = tempTag.getByte(ID_USED_CHANNELS);
+                final int usedChannels = tempTag.getInteger(ID_USED_CHANNELS);
 
-                tag.setByte(ID_USED_CHANNELS, usedChannels);
+                tag.setInteger(ID_USED_CHANNELS, usedChannels);
             }
         }
 
