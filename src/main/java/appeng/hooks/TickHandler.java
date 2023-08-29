@@ -35,6 +35,7 @@ import appeng.util.Platform;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
+import appeng.server.tracker.PerformanceTracker;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -179,7 +180,9 @@ public class TickHandler {
             // tick networks.
             this.getRepo().updateNetworks();
             for (final Grid g : this.getRepo().networks) {
+                PerformanceTracker.INSTANCE.startTracking(g);
                 g.update();
+                PerformanceTracker.INSTANCE.endTracking(g);
             }
 
             // cross world queue.
