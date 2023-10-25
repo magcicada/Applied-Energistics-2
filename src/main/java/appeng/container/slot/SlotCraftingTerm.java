@@ -97,26 +97,9 @@ public class SlotCraftingTerm extends AppEngCraftingSlot {
         return is;
     }
 
-    // Don't render the item client-side if the item stage for it is not unlocked yet
     @Override
-    public ItemStack getStack() {
-        if (Platform.isClient() && Loader.isModLoaded("itemstages")) {
-            return itemstageStack();
-        }
-        return super.getStack();
-    }
-
-    @SideOnly(Side.CLIENT)
-    ItemStack itemstageStack() {
-        final ItemStack item = super.getStack();
-        final String itemsStage = ItemStages.getStage(item);
-        final String enchantStage = ItemStages.getEnchantStage(item);
-        final EntityPlayer player = Minecraft.getMinecraft().player;
-
-        if ((itemsStage != null && !GameStageHelper.hasStage(player, itemsStage))
-                || (enchantStage != null && !GameStageHelper.hasStage(player, enchantStage)))
-            return ItemStack.EMPTY;
-        return super.getStack();
+    public boolean shouldDisplay() {
+        return !getStack().isEmpty();
     }
 
     public void doClick(final InventoryAction action, final EntityPlayer who) {
@@ -194,15 +177,6 @@ public class SlotCraftingTerm extends AppEngCraftingSlot {
                 if (!staged.isGoodForCrafting(ic))
                     return null;
             }
-        }
-
-        if (Loader.isModLoaded("itemstages")) {
-            final String itemsStage = ItemStages.getStage(recipe.getRecipeOutput());
-            final String enchantStage = ItemStages.getEnchantStage(recipe.getRecipeOutput());
-
-            if ((itemsStage != null && !GameStageHelper.hasStage(player, itemsStage))
-                    || (enchantStage != null && !GameStageHelper.hasStage(player, enchantStage)))
-                return null;
         }
 
         return recipe;

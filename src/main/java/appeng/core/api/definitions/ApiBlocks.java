@@ -561,6 +561,10 @@ public final class ApiBlocks implements IBlocks {
                 })
                 .build();
 
+        if (!stairs.maybeBlock().isPresent()) {
+            return new BlockDefinition(registryName, null, null);
+        }
+
         Verify.verify(stairs.maybeBlock().isPresent());
 
         return stairs;

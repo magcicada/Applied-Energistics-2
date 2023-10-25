@@ -592,6 +592,8 @@ public class GuiInterfaceTerminal extends AEBaseGui {
                         }
                     } else if (displayName.contains(term)) {
                         foundMatchingItemStack = true;
+                    } else {
+                        return false;
                     }
                 }
             }

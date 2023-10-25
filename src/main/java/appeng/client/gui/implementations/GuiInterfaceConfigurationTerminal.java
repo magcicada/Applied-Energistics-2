@@ -409,6 +409,8 @@ public class GuiInterfaceConfigurationTerminal extends AEBaseGui implements IJEI
                 }
             } else if (displayName.contains(term)) {
                 foundMatchingItemStack = true;
+            } else {
+                return false;
             }
         }
         return foundMatchingItemStack;

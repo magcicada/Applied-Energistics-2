@@ -196,7 +196,7 @@ public class ToolWirelessTerminal extends AEBasePoweredItem implements IWireless
                     ItemStack is = siu.getStackInSlot(s);
                     if (AEApi.instance().definitions().materials().cardMagnet().isSameAs(is)) {
                         NBTTagCompound tag = is.getTagCompound();
-                        if (tag != null && !tag.getBoolean("enabled")) {
+                        if (tag != null && tag.hasKey("enabled") && !tag.getBoolean("enabled")) {
                             return;
                         }
                         ItemMaterial im = (ItemMaterial) is.getItem();
