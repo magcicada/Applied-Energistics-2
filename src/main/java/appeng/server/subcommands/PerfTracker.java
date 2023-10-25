@@ -27,16 +27,16 @@ public class PerfTracker implements ISubCommand {
         if (args.length == 2) {
             if ("reset".equals(args[1])) {
                 PerformanceTracker.INSTANCE.resetTracker();
-                sender.sendMessage(new TextComponentString("PerformanceTracker has been reset."));
+                sender.sendMessage(new TextComponentString("性能跟踪器已经重置。"));
             } else {
-                sender.sendMessage(new TextComponentString(TextFormatting.RED + "Usage: /ae2 PerfTracker [reset]"));
+                sender.sendMessage(new TextComponentString(TextFormatting.RED + "用法: /ae2 PerfTracker [reset]"));
             }
             return;
         }
         Map<Grid, Tracker> trackerMap = PerformanceTracker.INSTANCE.getTrackerMap();
 
         sender.sendMessage(new TextComponentString(String.format(
-                "Grid tracker result in 1 minute data is being organized...(Total Grids: %s)", trackerMap.size())
+                "正在整理所有 AE 网络中 1 分钟内的数据 ...(总网络数量: %s)", trackerMap.size())
         ));
 
         trackerMap.values().stream()
@@ -51,19 +51,20 @@ public class PerfTracker implements ISubCommand {
 
         IGridNode pivot = grid.getPivot();
         DimensionalCoord location = pivot.getGridBlock().getLocation();
-        EntityPlayer player = AEApi.instance().registries().players().findPlayer(pivot.getPlayerID());
+        int playerID = pivot.getPlayerID();
+        EntityPlayer player = AEApi.instance().registries().players().findPlayer(playerID);
         int gridSize = grid.getNodes().size();
 
-        sender.sendMessage(new TextComponentString(String.format("Grid location: %s, Size: %s", location, gridSize)));
+        sender.sendMessage(new TextComponentString(String.format("网络位置（中心）：%s，网络节点数量：%s", location, gridSize)));
 
         if (player == null) {
-            sender.sendMessage(new TextComponentString("Owner: Unknown"));
+            sender.sendMessage(new TextComponentString(String.format("所有者：未知 (玩家 ID: %s)", playerID)));
         } else {
-            sender.sendMessage(new TextComponentString(String.format("Owner: %s (UUID: %s)", player.getDisplayNameString(), player.getUniqueID())));
+            sender.sendMessage(new TextComponentString(String.format("所有者：%s (UUID: %s)", player.getDisplayNameString(), player.getUniqueID())));
         }
 
-        sender.sendMessage(new TextComponentString(String.format("Tick time usage: %sms", (float) tracker.getTimeUsageAvg() / 1000F)));
-        sender.sendMessage(new TextComponentString(String.format("Max tick time usage: %sms", (float) tracker.getMaxTimeUsage() / 1000F)));
+        sender.sendMessage(new TextComponentString(String.format("平均 Tick 时间：%sms", (float) tracker.getTimeUsageAvg() / 1000F)));
+        sender.sendMessage(new TextComponentString(String.format("最大 Tick 时间：%sms", (float) tracker.getMaxTimeUsage() / 1000F)));
         sender.sendMessage(new TextComponentString(""));
     }
 

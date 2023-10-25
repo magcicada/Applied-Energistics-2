@@ -257,6 +257,7 @@ public class TickHandler {
         private synchronized void removeNetwork(Grid g) {
             this.toRemove.add(g);
             this.toAdd.remove(g);
+            PerformanceTracker.INSTANCE.getTrackerMap().remove(g);
         }
 
         private synchronized void updateNetworks() {
