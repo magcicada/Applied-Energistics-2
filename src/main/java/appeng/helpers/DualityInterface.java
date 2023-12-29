@@ -119,7 +119,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     private final ConfigManager cm = new ConfigManager(this);
     private final AppEngInternalAEInventory config = new AppEngInternalAEInventory(this, NUMBER_OF_CONFIG_SLOTS, 512);
     private final AppEngInternalInventory storage = new AppEngInternalOversizedInventory(this, NUMBER_OF_STORAGE_SLOTS, 512);
-    private final AppEngInternalInventory patterns = new AppEngInternalInventory(this, NUMBER_OF_PATTERN_SLOTS);
+    private final AppEngInternalInventory patterns = new AppEngInternalInventory(this, NUMBER_OF_PATTERN_SLOTS, 1);
     private final MEMonitorPassThrough<IAEItemStack> items = new MEMonitorPassThrough<>(new NullInventory<IAEItemStack>(), AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class));
     private final MEMonitorPassThrough<IAEFluidStack> fluids = new MEMonitorPassThrough<>(new NullInventory<IAEFluidStack>(), AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class));
     private final UpgradeInventory upgrades;
@@ -1203,6 +1203,13 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
         for (final ItemStack is : this.storage) {
             if (!is.isEmpty()) {
+                int maxStackSize = is.getMaxStackSize();
+                while (is.getCount() > maxStackSize) {
+                    ItemStack portionedStack = is.copy();
+                    portionedStack.setCount(maxStackSize);
+                    is.shrink(maxStackSize);
+                    drops.add(portionedStack);
+                }
                 drops.add(is);
             }
         }
