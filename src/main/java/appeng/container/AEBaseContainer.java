@@ -530,12 +530,9 @@ public abstract class AEBaseContainer extends Container {
                             s.putStack(is);
                         } else {
                             final ItemStack is = s.getStack().copy();
-                            // If the item is a container, then it's likely that stacking will cause the item to duplicate...
-                            if (is.getMaxStackSize() > 1) {
-                                if (is.getCount() < is.getMaxStackSize() * 8)
-                                    is.grow(1);
-                                s.putStack(is);
-                            }
+                            if (is.getCount() < is.getMaxStackSize() * 8)
+                                is.grow(1);
+                            s.putStack(is);
                         }
                         break;
                     case PICKUP_SINGLE:
