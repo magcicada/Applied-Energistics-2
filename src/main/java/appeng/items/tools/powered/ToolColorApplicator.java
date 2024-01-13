@@ -60,6 +60,7 @@ import net.minecraft.item.ItemSnowball;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -71,11 +72,13 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.lang3.text.WordUtils;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 
 public class ToolColorApplicator extends AEBasePoweredItem implements IStorageCell<IAEItemStack>, IItemGroup, IBlockTool, IMouseWheelItem {
 
+    private static final double POWER_PER_USE = 100;
     private static final Map<Integer, AEColor> ORE_TO_COLOR = new HashMap<>();
 
     static {
@@ -98,16 +101,26 @@ public class ToolColorApplicator extends AEBasePoweredItem implements IStorageCe
     }
 
     @Override
+    public ActionResult<ItemStack> onItemRightClick(World w, EntityPlayer p, EnumHand hand) {
+        ItemStack stack = p.getHeldItem(hand);
+        if (p.isSneaking()) {
+            if (!w.isRemote) {
+                cycleColors(stack, getColor(stack), 1);
+            }
+            return ActionResult.newResult(EnumActionResult.SUCCESS, stack);
+        }
+        return ActionResult.newResult(EnumActionResult.PASS, stack);
+    }
+
+    @Override
     public EnumActionResult onItemUse(ItemStack is, EntityPlayer p, World w, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+        if (p.isSneaking()) return EnumActionResult.PASS;
+
         final Block blk = w.getBlockState(pos).getBlock();
 
         ItemStack paintBall = this.getColor(is);
 
-        final IMEInventory<IAEItemStack> inv = AEApi.instance()
-                .registries()
-                .cell()
-                .getCellInventory(is, null,
-                        AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class));
+        final IMEInventory<IAEItemStack> inv = getInventory(is);
         if (inv != null) {
             final IAEItemStack option = inv.extractItems(AEItemStack.fromItemStack(paintBall), Actionable.SIMULATE, new BaseActionSource());
 
@@ -122,15 +135,13 @@ public class ToolColorApplicator extends AEBasePoweredItem implements IStorageCe
                 return EnumActionResult.FAIL;
             }
 
-            final double powerPerUse = 100;
             if (!paintBall.isEmpty() && paintBall.getItem() instanceof ItemSnowball) {
                 final TileEntity te = w.getTileEntity(pos);
                 // clean cables.
                 if (te instanceof IColorableTile) {
-                    if (this.getAECurrentPower(is) > powerPerUse && ((IColorableTile) te).getColor() != AEColor.TRANSPARENT) {
+                    if (this.getAECurrentPower(is) > POWER_PER_USE && ((IColorableTile) te).getColor() != AEColor.TRANSPARENT) {
                         if (((IColorableTile) te).recolourBlock(side, AEColor.TRANSPARENT, p)) {
-                            inv.extractItems(AEItemStack.fromItemStack(paintBall), Actionable.MODULATE, new BaseActionSource());
-                            this.extractAEPower(is, powerPerUse, Actionable.MODULATE);
+                            consumeItem(is, paintBall, false);
                             return EnumActionResult.SUCCESS;
                         }
                     }
@@ -139,30 +150,79 @@ public class ToolColorApplicator extends AEBasePoweredItem implements IStorageCe
                 // clean paint balls..
                 final Block testBlk = w.getBlockState(pos.offset(side)).getBlock();
                 final TileEntity painted = w.getTileEntity(pos.offset(side));
-                if (this.getAECurrentPower(is) > powerPerUse && testBlk instanceof BlockPaint && painted instanceof TilePaint) {
-                    inv.extractItems(AEItemStack.fromItemStack(paintBall), Actionable.MODULATE, new BaseActionSource());
-                    this.extractAEPower(is, powerPerUse, Actionable.MODULATE);
+                if (this.getAECurrentPower(is) > POWER_PER_USE && testBlk instanceof BlockPaint && painted instanceof TilePaint) {
+                    consumeItem(is, paintBall, false);
                     ((TilePaint) painted).cleanSide(side.getOpposite());
                     return EnumActionResult.SUCCESS;
                 }
             } else if (!paintBall.isEmpty()) {
                 final AEColor color = this.getColorFromItem(paintBall);
 
-                if (color != null && this.getAECurrentPower(is) > powerPerUse) {
+                if (color != null && this.getAECurrentPower(is) > POWER_PER_USE) {
                     if (color != AEColor.TRANSPARENT && this.recolourBlock(blk, side, w, pos, side, color, p)) {
-                        inv.extractItems(AEItemStack.fromItemStack(paintBall), Actionable.MODULATE, new BaseActionSource());
-                        this.extractAEPower(is, powerPerUse, Actionable.MODULATE);
+                        consumeItem(is, paintBall, false);
                         return EnumActionResult.SUCCESS;
                     }
                 }
             }
         }
 
-        if (p.isSneaking()) {
-            this.cycleColors(is, paintBall, 1);
+        return EnumActionResult.FAIL;
+    }
+
+    public boolean consumeColor(ItemStack applicator, AEColor color, boolean simulate) {
+        final IMEInventory<IAEItemStack> inv = getInventory(applicator);
+        if (inv == null) return false;
+
+        ItemStack paintItem = null;
+        for (final IAEItemStack what : inv.getAvailableItems(getChannel().createList())) {
+            final ItemStack def = what.createItemStack();
+            def.setCount(1);
+            if (getColorFromItem(def) == color) {
+                paintItem = def;
+            }
         }
 
-        return EnumActionResult.FAIL;
+        if (paintItem != null) {
+            return consumeItem(applicator, paintItem, simulate);
+        }
+        return false;
+    }
+
+    public boolean consumeItem(ItemStack applicator, ItemStack paintItem, boolean simulate) {
+        final IMEInventory<IAEItemStack> inv = getInventory(applicator);
+        if (inv == null) return false;
+
+        final Actionable mode = simulate ? Actionable.SIMULATE : Actionable.MODULATE;
+        boolean success = inv.extractItems(AEItemStack.fromItemStack(paintItem), mode, new BaseActionSource()) != null
+                && this.extractAEPower(applicator, POWER_PER_USE, mode) >= POWER_PER_USE;
+
+        // Clear the color when we run out
+        if (success && !simulate && ItemStack.areItemStacksEqual(paintItem, getColor(applicator))) {
+            if (inv.extractItems(AEItemStack.fromItemStack(paintItem), Actionable.SIMULATE, new BaseActionSource()) == null) {
+                setColor(applicator, ItemStack.EMPTY);
+            }
+        }
+        return success;
+    }
+
+    public boolean setActiveColor(ItemStack applicator, @Nullable AEColor color) {
+        if (color == null) {
+            setColor(applicator, ItemStack.EMPTY);
+            return true;
+        }
+
+        final IMEInventory<IAEItemStack> inv = getInventory(applicator);
+        if (inv == null) return false;
+
+        for (IAEItemStack stack : inv.getAvailableItems(getChannel().createList())) {
+            ItemStack def = stack.getDefinition();
+            if (getColorFromItem(def) == color) {
+                setColor(applicator, def);
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -191,8 +251,7 @@ public class ToolColorApplicator extends AEBasePoweredItem implements IStorageCe
             return AEColor.TRANSPARENT;
         }
 
-        if (paintBall.getItem() instanceof ItemPaintBall) {
-            final ItemPaintBall ipb = (ItemPaintBall) paintBall.getItem();
+        if (paintBall.getItem() instanceof ItemPaintBall ipb) {
             return ipb.getColor(paintBall);
         } else {
             final int[] id = OreDictionary.getOreIDs(paintBall);
@@ -205,6 +264,13 @@ public class ToolColorApplicator extends AEBasePoweredItem implements IStorageCe
         }
 
         return null;
+    }
+
+    private IMEInventory<IAEItemStack> getInventory(ItemStack stack) {
+        return AEApi.instance()
+                .registries()
+                .cell()
+                .getCellInventory(stack, null, getChannel());
     }
 
     public ItemStack getColor(final ItemStack is) {
@@ -223,14 +289,9 @@ public class ToolColorApplicator extends AEBasePoweredItem implements IStorageCe
     private ItemStack findNextColor(final ItemStack is, final ItemStack anchor, final int scrollOffset) {
         ItemStack newColor = ItemStack.EMPTY;
 
-        final IMEInventory<IAEItemStack> inv = AEApi.instance()
-                .registries()
-                .cell()
-                .getCellInventory(is, null,
-                        AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class));
+        final IMEInventory<IAEItemStack> inv = getInventory(is);
         if (inv != null) {
-            final IItemList<IAEItemStack> itemList = inv
-                    .getAvailableItems(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class).createList());
+            final IItemList<IAEItemStack> itemList = inv.getAvailableItems(getChannel().createList());
             if (anchor.isEmpty()) {
                 final IAEItemStack firstItem = itemList.getFirstItem();
                 if (firstItem != null) {
@@ -243,11 +304,8 @@ public class ToolColorApplicator extends AEBasePoweredItem implements IStorageCe
                     list.add(i);
                 }
 
-                Collections.sort(list, (a, b) -> Integer.compare(a.getItemDamage(), b.getItemDamage()));
-
-                if (list.size() <= 0) {
-                    return ItemStack.EMPTY;
-                }
+                Collections.sort(list, Comparator.comparingInt(IAEItemStack::getItemDamage));
+                if (list.isEmpty()) return ItemStack.EMPTY;
 
                 IAEItemStack where = list.getFirst();
                 int cycles = 1 + list.size();

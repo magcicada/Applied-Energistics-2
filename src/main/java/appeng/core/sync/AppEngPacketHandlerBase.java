@@ -44,8 +44,6 @@ public class AppEngPacketHandlerBase {
 
         PACKET_CONFIG_BUTTON(PacketConfigButton.class),
 
-        PACKET_PART_PLACEMENT(PacketPartPlacement.class),
-
         PACKET_LIGHTNING(PacketLightning.class),
 
         PACKET_MATTER_CANNON(PacketMatterCannon.class),
@@ -88,7 +86,9 @@ public class AppEngPacketHandlerBase {
 
         PACKET_TERMINAL_KEYBIND(PacketTerminalUse.class),
 
-        PACKET_CRAFTING_TOAST(PacketCraftingToast.class);
+        PACKET_CRAFTING_TOAST(PacketCraftingToast.class),
+
+        PACKET_COLOR_APPLICATOR_SELECT_COLOR(PacketColorApplicatorSelectColor.class);
 
 
         private final Class<? extends AppEngPacket> packetClass;
