@@ -46,13 +46,13 @@ public class AE2ELTransformer implements IClassTransformer {
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         transformedName = transformedName.replace('/', '.');
 
-        if ("net.minecraftforge.common.ForgeHooks".equals(transformedName)) {
-            ClassReader cr = new ClassReader(basicClass);
-            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-            ClassVisitor cv = new PickBlockPatch(cw);
-            cr.accept(cv, ClassReader.EXPAND_FRAMES);
-            return cw.toByteArray();
-        }
+//        if ("net.minecraftforge.common.ForgeHooks".equals(transformedName)) {
+//            ClassReader cr = new ClassReader(basicClass);
+//            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+//            ClassVisitor cv = new PickBlockPatch(cw);
+//            cr.accept(cv, ClassReader.EXPAND_FRAMES);
+//            return cw.toByteArray();
+//        }
 
         Consumer<ClassNode> consumer = (n) -> {};
         Consumer<ClassNode> emptyConsumer = consumer;

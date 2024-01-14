@@ -34,6 +34,7 @@ import appeng.api.util.AEPartLocation;
 import appeng.api.util.WorldCoord;
 import appeng.block.crafting.BlockCraftingUnit;
 import appeng.block.crafting.BlockCraftingUnit.CraftingUnitType;
+import appeng.core.AELog;
 import appeng.me.cluster.IAECluster;
 import appeng.me.cluster.IAEMultiBlock;
 import appeng.me.cluster.implementations.CraftingCPUCalculator;
@@ -42,11 +43,15 @@ import appeng.me.helpers.AENetworkProxy;
 import appeng.me.helpers.AENetworkProxyMultiblock;
 import appeng.tile.grid.AENetworkTile;
 import appeng.util.Platform;
+import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 
 import java.util.*;
 
@@ -261,20 +266,43 @@ public class TileCraftingTile extends AENetworkTile implements IAEMultiBlock, IP
                 throw new IllegalStateException(this.cluster + " does not contain any kind of blocks, which were destroyed.");
             }
 
+            boolean overflow = false;
+            long totalDropped = 0;
+            List<IAEItemStack> stackList = new LinkedList<>();
             for (IAEItemStack ais : inv.getAvailableItems(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class).createList())) {
                 ais = ais.copy();
                 ais.setStackSize(ais.getDefinition().getMaxStackSize());
                 while (true) {
                     final IAEItemStack g = inv.extractItems(ais.copy(), Actionable.MODULATE, this.cluster.getActionSource());
-                    if (g == null) {
+                    if (g == null || overflow) {
                         break;
                     }
 
-                    final WorldCoord wc = places.poll();
-                    places.add(wc);
+                    totalDropped += g.getStackSize();
+                    stackList.add(g);
 
-                    Platform.spawnDrops(this.world, wc.getPos(), Collections.singletonList(g.createItemStack()));
+                    if (totalDropped >= 6400) {
+                        final WorldCoord wc = places.getFirst();
+
+                        String warnMessage = String.format("%s[WARN] Crafting CPU spawned over 6400 items. World: %s, Pos: %s, %sALL ITEMS WILL BE DESTROYED.",
+                                TextFormatting.YELLOW,
+                                getWorld().getWorldInfo().getWorldName(), wc,
+                                TextFormatting.RED);
+
+                        AELog.warn(warnMessage);
+                        MinecraftServer server = getWorld().getMinecraftServer();
+                        if (server != null) {
+                            server.getPlayerList().sendMessage(new TextComponentString(warnMessage));
+                        }
+                        stackList.clear();
+                        overflow = true;
+                    }
                 }
+            }
+
+            if (!stackList.isEmpty()) {
+                final WorldCoord wc = places.getFirst();
+                Platform.spawnDrops(this.world, wc.getPos(), Lists.transform(stackList, IAEItemStack::createItemStack));
             }
 
             this.cluster.destroy();
