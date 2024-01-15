@@ -399,7 +399,10 @@ public abstract class AEBaseContainer extends Container {
                                     return ItemStack.EMPTY; // don't insert duplicate encoded patterns to interfaces
                                 }
 
-                                int maxSize = Math.max(tis.getMaxStackSize(), d.getSlotStackLimit());
+                                int maxSize = t.getMaxStackSize();
+                                if (maxSize > d.getSlotStackLimit()) {
+                                    maxSize = d.getSlotStackLimit();
+                                }
 
                                 int placeAble = maxSize - t.getCount();
 
@@ -435,7 +438,10 @@ public abstract class AEBaseContainer extends Container {
 
                     if (d.isItemValid(tis)) {
                         if (!d.getHasStack()) {
-                            int maxSize = Math.max(tis.getMaxStackSize(), d.getSlotStackLimit());
+                            int maxSize = tis.getMaxStackSize();
+                            if (maxSize > d.getSlotStackLimit()) {
+                                maxSize = d.getSlotStackLimit();
+                            }
 
                             final ItemStack tmp = tis.copy();
                             if (tmp.getCount() > maxSize) {
@@ -964,7 +970,7 @@ public abstract class AEBaseContainer extends Container {
                 if (!draggedStack.isEmpty()) {
                     if (appEngSlot.isItemValid(draggedStack)) {
                         if (slotStack.getItem() == draggedStack.getItem() && slotStack.getMetadata() == draggedStack.getMetadata() && ItemStack.areItemStackTagsEqual(slotStack, draggedStack)) {
-                            var maxSize = Math.max(appEngSlot.getSlotStackLimit(), draggedStack.getMaxStackSize());
+                            var maxSize = appEngSlot.getSlotStackLimit();
                             var maxInsertable = Math.min(draggedStack.getCount(), maxSize - appEngSlot.getStack().getCount());
                             var toInsert = Math.min(maxInsertable, dragType == 0 ? maxInsertable : 1);
 
