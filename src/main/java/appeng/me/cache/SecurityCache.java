@@ -136,6 +136,11 @@ public class SecurityCache implements ISecurityGrid {
         Preconditions.checkNotNull(player);
         Preconditions.checkNotNull(perm);
 
+        // If player is OP.
+        if (player.canUseCommand(2, "")) {
+            return true;
+        }
+
         final GameProfile profile = player.getGameProfile();
         final int playerID = WorldData.instance().playerData().getPlayerID(profile);
 
@@ -145,7 +150,7 @@ public class SecurityCache implements ISecurityGrid {
     @Override
     public boolean hasPermission(final int playerID, final SecurityPermissions perm) {
         if (playerID == -1) {
-            return true;
+            return false;
         }
         if (this.isAvailable()) {
             final EnumSet<SecurityPermissions> perms = this.playerPerms.get(playerID);

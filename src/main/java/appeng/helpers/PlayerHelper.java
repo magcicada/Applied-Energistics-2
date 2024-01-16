@@ -4,6 +4,8 @@ import appeng.util.Platform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.fml.server.FMLServerHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,9 +16,9 @@ public class PlayerHelper {
 	public static EntityPlayerMP getPlayerByUUID(UUID uuid) {
 		final MinecraftServer server;
 		if (Platform.isClientInstall()) {
-			server = Minecraft.getMinecraft().getIntegratedServer();
+			server = getIntegratedServer();
 		} else {
-			server = FMLServerHandler.instance().getServer();
+			server = getDedicatedServer();
 		}
 
 		if (server == null) {
@@ -24,5 +26,15 @@ public class PlayerHelper {
 		}
 
 		return server.getPlayerList().getPlayerByUUID(uuid);
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static MinecraftServer getIntegratedServer() {
+		return Minecraft.getMinecraft().getIntegratedServer();
+	}
+
+	@SideOnly(Side.SERVER)
+	public static MinecraftServer getDedicatedServer() {
+		return FMLServerHandler.instance().getServer();
 	}
 }
