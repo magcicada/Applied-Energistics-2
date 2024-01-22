@@ -110,7 +110,7 @@ public class CableBusModel implements IModel, ISelectiveResourceReloadListener {
     @Override
     public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate) {
         if (resourcePredicate.test(VanillaResourceType.MODELS)) {
-            CableBusBakedModel.CABLE_MODEL_CACHE.clear();
+            CableBusBakedModel.CABLE_MODEL_CACHE.invalidateAll();
         }
     }
 
