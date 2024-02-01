@@ -193,6 +193,7 @@ public class TickHandler {
 
             // tick networks.
             this.getRepo().updateNetworks();
+            PerformanceTracker.INSTANCE.startTracking();
             for (final Grid g : this.getRepo().networks) {
                 PerformanceTracker.INSTANCE.startTracking(g);
                 g.update();
@@ -271,7 +272,7 @@ public class TickHandler {
         private synchronized void removeNetwork(Grid g) {
             this.toRemove.add(g);
             this.toAdd.remove(g);
-            PerformanceTracker.INSTANCE.getTrackerMap().remove(g);
+            PerformanceTracker.INSTANCE.getTrackers().remove(g);
         }
 
         private synchronized void updateNetworks() {

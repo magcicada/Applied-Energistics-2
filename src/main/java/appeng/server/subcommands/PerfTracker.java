@@ -33,7 +33,7 @@ public class PerfTracker implements ISubCommand {
             }
             return;
         }
-        Map<Grid, Tracker> trackerMap = PerformanceTracker.INSTANCE.getTrackerMap();
+        Map<Grid, Tracker> trackerMap = PerformanceTracker.INSTANCE.getTrackers();
 
         sender.sendMessage(new TextComponentString(String.format(
                 "正在整理所有 AE 网络中 1 分钟内的数据 ...(总网络数量: %s)", trackerMap.size())

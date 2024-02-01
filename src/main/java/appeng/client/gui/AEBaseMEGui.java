@@ -30,6 +30,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.client.config.GuiUtils;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -81,7 +82,9 @@ public abstract class AEBaseMEGui extends AEBaseGui {
                     currentToolTip.add(TextFormatting.GRAY + local);
                 }
 
+                GuiUtils.preItemToolTip(stack);
                 this.drawHoveringText(currentToolTip, x, y, this.fontRenderer);
+                GuiUtils.postItemToolTip();
 
                 return;
             } else if (stack.getCount() > bigNumber) {
@@ -91,7 +94,9 @@ public abstract class AEBaseMEGui extends AEBaseGui {
 
                 currentToolTip.add(TextFormatting.GRAY + format);
 
+                GuiUtils.preItemToolTip(stack);
                 this.drawHoveringText(currentToolTip, x, y, this.fontRenderer);
+                GuiUtils.postItemToolTip();
 
                 return;
             }
@@ -100,7 +105,9 @@ public abstract class AEBaseMEGui extends AEBaseGui {
                 if (!s.getStack().isEmpty()) {
                     final String formattedAmount = NumberFormat.getNumberInstance(Locale.US).format(s.getStack().getCount());
                     currentToolTip.add(TextFormatting.GRAY + formattedAmount);
+                    GuiUtils.preItemToolTip(stack);
                     this.drawHoveringText(currentToolTip, x, y, this.fontRenderer);
+                    GuiUtils.postItemToolTip();
                     return;
                 }
             }
