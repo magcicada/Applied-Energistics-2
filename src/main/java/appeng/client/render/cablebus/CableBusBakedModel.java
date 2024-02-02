@@ -24,10 +24,10 @@ import appeng.api.parts.IPartModel;
 import appeng.api.util.AECableType;
 import appeng.api.util.AEColor;
 import appeng.block.networking.BlockCableBus;
-import appeng.core.AELog;
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.Weigher;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -42,6 +42,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.property.IExtendedBlockState;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.Map.Entry;
@@ -49,8 +50,6 @@ import java.util.concurrent.ExecutionException;
 
 
 public class CableBusBakedModel implements IBakedModel {
-
-    static final Cache<CableBusRenderState, List<BakedQuad>> CABLE_MODEL_CACHE = CacheBuilder.newBuilder().build();
 
     private final CableBuilder cableBuilder;
 
@@ -62,11 +61,24 @@ public class CableBusBakedModel implements IBakedModel {
 
     private final TextureMap textureMap = Minecraft.getMinecraft().getTextureMapBlocks();
 
+    private final LoadingCache<CableBusRenderState, List<BakedQuad>> cableModelCache;
+
     CableBusBakedModel(CableBuilder cableBuilder, FacadeBuilder facadeBuilder, Map<ResourceLocation, IBakedModel> partModels, TextureAtlasSprite particleTexture) {
         this.cableBuilder = cableBuilder;
         this.facadeBuilder = facadeBuilder;
         this.partModels = partModels;
         this.particleTexture = particleTexture;
+        this.cableModelCache = CacheBuilder.newBuilder()
+                .maximumWeight(5000)
+                .weigher((Weigher<CableBusRenderState, List<BakedQuad>>) (k, v) -> v.size())
+                .build(new CacheLoader<>() {
+                    @Override
+                    public List<BakedQuad> load(@Nonnull CableBusRenderState rs) {
+                        final List<BakedQuad> model = new ArrayList<>();
+                        addCableQuads(rs, model);
+                        return model;
+                    }
+                });
     }
 
     @Override
@@ -87,14 +99,7 @@ public class CableBusBakedModel implements IBakedModel {
         if (layer == BlockRenderLayer.CUTOUT) {
 
             // First, handle the cable at the center of the cable bus
-            List<BakedQuad> cableModel;
-            try {
-                cableModel = CABLE_MODEL_CACHE.get(renderState, () -> this.getCableQuads(renderState));
-            } catch (ExecutionException e) {
-                AELog.error(e);
-                cableModel = this.getCableQuads(renderState);
-            }
-
+            final List<BakedQuad> cableModel = cableModelCache.getUnchecked(renderState);
             quads.addAll(cableModel);
 
             // Then handle attachments
