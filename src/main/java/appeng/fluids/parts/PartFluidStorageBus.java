@@ -551,7 +551,7 @@ public class PartFluidStorageBus extends PartUpgradeable implements IGridTickabl
      */
     protected Iterable<IAEFluidStack> filterChanges(Iterable<IAEFluidStack> change) {
         var storageFilter = this.getConfigManager().getSetting(Settings.STORAGE_FILTER);
-        if (storageFilter == StorageFilter.EXTRACTABLE_ONLY) {
+        if (storageFilter == StorageFilter.EXTRACTABLE_ONLY && handler != null) {
             var filteredList = new ArrayList<IAEFluidStack>();
             for (final IAEFluidStack stack : change) {
                 if (this.handler.passesBlackOrWhitelist(stack)) {
