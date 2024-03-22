@@ -599,7 +599,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
      */
     protected Iterable<IAEItemStack> filterChanges(Iterable<IAEItemStack> change) {
         var storageFilter = this.getConfigManager().getSetting(Settings.STORAGE_FILTER);
-        if (storageFilter == StorageFilter.EXTRACTABLE_ONLY) {
+        if (storageFilter == StorageFilter.EXTRACTABLE_ONLY && handler != null) {
             var filteredList = new ArrayList<IAEItemStack>();
             for (final IAEItemStack stack : change) {
                 if (this.handler.passesBlackOrWhitelist(stack)) {
