@@ -121,6 +121,7 @@ public enum GuiText {
     Substitute,
     Yes,
     No,
+    PatternEncoder,
 
     MolecularAssembler,
 

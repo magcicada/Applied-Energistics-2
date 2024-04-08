@@ -35,6 +35,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -172,6 +173,12 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
             final String canSubstitute = substitute ? GuiText.Yes.getLocal() : GuiText.No.getLocal();
 
             lines.add(substitutionLabel + canSubstitute);
+        }
+
+        NBTTagCompound tag = stack.getTagCompound();
+        String encoder;
+        if (tag != null && !(encoder = tag.getString("encoderName")).isEmpty()) {
+            lines.add(String.format(GuiText.PatternEncoder.getLocal(), encoder));
         }
     }
 
