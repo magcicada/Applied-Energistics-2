@@ -76,6 +76,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.event.world.ChunkEvent;
@@ -300,6 +301,18 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
             this.handler = null;
             resetCache(true);
         }
+    }
+
+    @Override
+    public void removeFromWorld() {
+        super.removeFromWorld();
+        MinecraftForge.EVENT_BUS.unregister(this);
+    }
+
+    @Override
+    public void addToWorld() {
+        super.addToWorld();
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @Override
