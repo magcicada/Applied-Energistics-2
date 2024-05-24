@@ -72,7 +72,7 @@ import net.minecraftforge.fml.common.Optional;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-import yalter.mousetweaks.api.MouseTweaksIgnore;
+import yalter.mousetweaks.api.IMTModGuiContainer2;
 
 import java.awt.*;
 import java.io.IOException;
@@ -85,9 +85,8 @@ import java.util.concurrent.TimeUnit;
 import static appeng.integration.modules.jei.JEIPlugin.aeGuiHandler;
 import static appeng.integration.modules.jei.JEIPlugin.runtime;
 
-
-@MouseTweaksIgnore
-public abstract class AEBaseGui extends GuiContainer {
+@Optional.Interface(iface = "yalter.mousetweaks.api.IMTModGuiContainer2", modid = "mousetweaks")
+public abstract class AEBaseGui extends GuiContainer implements IMTModGuiContainer2 {
     private final List<InternalSlotME> meSlots = new ArrayList<>();
     // drag y
     private final Set<Slot> drag_click = new HashSet<>();
@@ -950,10 +949,42 @@ public abstract class AEBaseGui extends GuiContainer {
                     this.zLevel = 0.0F;
                     this.itemRender.zLevel = 0.0F;
 
+                    boolean wasDragSplitting = this.dragSplitting;
+                    this.dragSplitting = false; // to prevent the vanilla slot renderer from rendering the stack count during drag splitting, we're re-enabling it later
+
                     // Annoying but easier than trying to splice into render item
                     super.drawSlot(s);
 
-                    this.stackSizeRenderer.renderStackSize(this.fontRenderer, AEItemStack.fromItemStack(appEngSlot.getDisplayStack()), s.xPos, s.yPos);
+                    ItemStack stackInSlot = ((AppEngSlot)s).getDisplayStack();
+                    ItemStack stackUnderCursor = this.mc.player.inventory.getItemStack();
+
+                    if (wasDragSplitting
+                        && this.dragSplittingSlots.contains(s)
+                        && this.dragSplittingSlots.size() > 1
+                        && !stackUnderCursor.isEmpty()) {
+                        if (Container.canAddItemToSlot(s, stackUnderCursor, true) && this.inventorySlots.canDragIntoSlot(s))
+                        {
+                            drawRect(s.xPos, s.yPos, s.xPos + 16, s.yPos + 16, -2130706433);
+
+                            stackInSlot = stackUnderCursor.copy();
+                            Container.computeStackSize(this.dragSplittingSlots, this.dragSplittingLimit, stackInSlot, s.getStack().isEmpty() ? 0 : s.getStack().getCount());
+                            int k = Math.min(stackInSlot.getMaxStackSize(), s.getItemStackLimit(stackInSlot));
+
+                            if (stackInSlot.getCount() > k)
+                            {
+                                stackInSlot.setCount(k);
+                            }
+                        }
+                        else
+                        {
+                            this.dragSplittingSlots.remove(s);
+                            this.updateDragSplitting();
+                        }
+                    }
+
+                    this.dragSplitting = wasDragSplitting;
+                    this.stackSizeRenderer.renderStackSize(this.fontRenderer, AEItemStack.fromItemStack(stackInSlot), s.xPos, s.yPos);
+
                     return;
                 } else {
                     super.drawSlot(s);
@@ -987,5 +1018,81 @@ public abstract class AEBaseGui extends GuiContainer {
 
     protected List<InternalSlotME> getMeSlots() {
         return this.meSlots;
+    }
+
+    // TODO: remove this when refactoring slot rendering
+    private void updateDragSplitting()
+    {
+        ItemStack itemstack = this.mc.player.inventory.getItemStack();
+
+        if (!itemstack.isEmpty() && this.dragSplitting)
+        {
+            if (this.dragSplittingLimit == 2)
+            {
+                this.dragSplittingRemnant = itemstack.getMaxStackSize();
+            }
+            else
+            {
+                this.dragSplittingRemnant = itemstack.getCount();
+
+                for (Slot slot : this.dragSplittingSlots)
+                {
+                    ItemStack itemstack1 = itemstack.copy();
+                    ItemStack itemstack2 = slot.getStack();
+                    int i = itemstack2.isEmpty() ? 0 : itemstack2.getCount();
+                    Container.computeStackSize(this.dragSplittingSlots, this.dragSplittingLimit, itemstack1, i);
+                    int j = Math.min(itemstack1.getMaxStackSize(), slot.getItemStackLimit(itemstack1));
+
+                    if (itemstack1.getCount() > j)
+                    {
+                        itemstack1.setCount(j);
+                    }
+
+                    this.dragSplittingRemnant -= itemstack1.getCount() - i;
+                }
+            }
+        }
+    }
+
+    @Override
+    @Optional.Method(modid = "mousetweaks")
+    public boolean MT_isMouseTweaksDisabled() {
+        return true;
+    }
+
+    @Override
+    @Optional.Method(modid = "mousetweaks")
+    public boolean MT_isWheelTweakDisabled() {
+        return true;
+    }
+
+    @Override
+    @Optional.Method(modid = "mousetweaks")
+    public Container MT_getContainer() {
+        return this.inventorySlots;
+    }
+
+    @Override
+    @Optional.Method(modid = "mousetweaks")
+    public Slot MT_getSlotUnderMouse() {
+        return getSlotUnderMouse();
+    }
+
+    @Override
+    @Optional.Method(modid = "mousetweaks")
+    public boolean MT_isCraftingOutput(Slot slot) {
+        return slot instanceof SlotOutput || slot instanceof AppEngCraftingSlot;
+    }
+
+    @Override
+    @Optional.Method(modid = "mousetweaks")
+    public boolean MT_isIgnored(Slot slot) {
+        return true;
+    }
+
+    @Override
+    @Optional.Method(modid = "mousetweaks")
+    public boolean MT_disableRMBDraggingFunctionality() {
+        return true;
     }
 }
