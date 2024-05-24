@@ -41,7 +41,15 @@ public enum PlayerMessages {
     DeviceNotLinked,
     StationCanNotBeLocated,
     SettingCleared,
-    MissingPatternsToEncode;
+    MissingPatternsToEncode,
+    InterfaceInOtherDimParam,
+    InterfaceInOtherDim,
+    InterfaceHighlighted,
+    ;
+
+    public ITextComponent get(Object... params) {
+        return new TextComponentTranslation(this.getName(), params);
+    }
 
     public ITextComponent get() {
         return new TextComponentTranslation(this.getName());

@@ -116,10 +116,13 @@ public class GuiImgButton extends GuiButton implements ITooltip {
             this.registerApp(11 + 4 * 16, Settings.ACTIONS, ActionItems.DECREASE_BY_ONE, ButtonToolTips.DecreaseByOne, ButtonToolTips.DecreaseByOneDesc);
             this.registerApp(12 + 4 * 16, Settings.ACTIONS, ActionItems.MAX_COUNT, ButtonToolTips.MaxCount, ButtonToolTips.MaxCountDesc);
 
-            this.registerApp(6 + 5 * 16, Settings.ACTIONS, ActionItems.FREE_MOLECULAR_SLOT_SHORTCUT, ButtonToolTips.FreeMolecularSlotShortcut, ButtonToolTips.FreeMolecularSlotShortcutDesc);
+            this.registerApp(6 + 5 * 16, Settings.ACTIONS, ActionItems.MOLECULAR_ASSEMBLERS_ON, ButtonToolTips.ToggleMolecularAssemblers, ButtonToolTips.ToggleMolecularAssemblersOnDesc);
             this.registerApp(7 + 5 * 16, Settings.ACTIONS, ActionItems.TOGGLE_SHOW_FULL_INTERFACES_ON, ButtonToolTips.ToggleShowFullInterfaces, ButtonToolTips.ToggleShowFullInterfacesOnDesc);
             this.registerApp(8 + 5 * 16, Settings.ACTIONS, ActionItems.TOGGLE_SHOW_FULL_INTERFACES_OFF, ButtonToolTips.ToggleShowFullInterfaces, ButtonToolTips.ToggleShowFullInterfacesOffDesc);
+            this.registerApp(9 + 5 * 16, Settings.ACTIONS, ActionItems.MOLECULAR_ASSEMBLERS_OFF, ButtonToolTips.ToggleMolecularAssemblers, ButtonToolTips.ToggleMolecularAssemblersOffDesc);
             this.registerApp(6 + 6 * 16, Settings.ACTIONS, ActionItems.HIGHLIGHT_INTERFACE, ButtonToolTips.HighlightInterface, "");
+            this.registerApp(4 + 5 * 16, Settings.ACTIONS, ActionItems.TOGGLE_SHOW_ONLY_INVALID_PATTERNS_OFF, ButtonToolTips.ToggleShowOnlyInvalidInterface, ButtonToolTips.ToggleShowOnlyInvalidInterfaceOffDesc);
+            this.registerApp(5 + 5 * 16, Settings.ACTIONS, ActionItems.TOGGLE_SHOW_ONLY_INVALID_PATTERNS_ON, ButtonToolTips.ToggleShowOnlyInvalidInterface, ButtonToolTips.ToggleShowOnlyInvalidInterfaceOnDesc);
 
             this.registerApp(8, Settings.ACTIONS, ActionItems.ENCODE, ButtonToolTips.Encode, ButtonToolTips.EncodeDescription);
             this.registerApp(4 + 3 * 16, Settings.ACTIONS, ItemSubstitution.ENABLED, ButtonToolTips.Substitutions, ButtonToolTips.SubstitutionsDescEnabled);
