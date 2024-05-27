@@ -14,6 +14,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -32,19 +33,21 @@ public class WrenchClickHook {
 
         if (event instanceof PlayerInteractEvent.RightClickBlock && !event.getEntityPlayer().world.isRemote) {
             EntityPlayer player = event.getEntityPlayer();
+            if (player instanceof FakePlayer) return;
+
             EnumHand hand = event.getHand();
             BlockPos pos = event.getPos();
             World world = event.getWorld();
             ItemStack held = event.getItemStack();
 
-            if (!Platform.hasPermissions(new DimensionalCoord(world, pos), player)) {
-                return;
-            }
-
             if (player.isSneaking() && Platform.isWrench(player, held, pos)) {
                 Block block = world.getBlockState(pos).getBlock();
                 TileEntity tile = world.getTileEntity(pos);
                 if (!(tile instanceof IPartHost host)) {
+                    return;
+                }
+
+                if (!Platform.hasPermissions(new DimensionalCoord(world, pos), player)) {
                     return;
                 }
 
