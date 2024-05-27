@@ -134,4 +134,14 @@ public class BasicCellInventoryHandler<T extends IAEStack<T>> extends MEInventor
     NBTTagCompound openNbtData() {
         return Platform.openNbtData(this.getCellInv().getItemStack());
     }
+
+    @Override
+    protected boolean canExtract(T request) {
+        return this.hasReadAccess();
+    }
+
+    @Override
+    protected boolean shouldItemBeAvailable(T request) {
+        return this.hasReadAccess();
+    }
 }

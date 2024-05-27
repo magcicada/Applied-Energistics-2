@@ -43,6 +43,15 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     private IPartitionList<T> myPartitionList;
 
     private AccessRestriction cachedAccessRestriction;
+
+    protected final boolean hasReadAccess() {
+        return hasReadAccess;
+    }
+
+    protected final boolean hasWriteAccess() {
+        return hasWriteAccess;
+    }
+
     private boolean hasReadAccess;
     private boolean hasWriteAccess;
     private boolean isSticky;
@@ -195,11 +204,11 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     }
 
     protected boolean canExtract(T request) {
-        return this.hasReadAccess;
+        return this.hasReadAccess && this.passesBlackOrWhitelist(request);
     }
 
-    private boolean shouldItemBeAvailable(T t) {
-        return this.hasReadAccess && this.passesBlackOrWhitelist(t);
+    protected boolean shouldItemBeAvailable(T request) {
+        return this.hasReadAccess && this.passesBlackOrWhitelist(request);
     }
 
     public boolean passesBlackOrWhitelist(T input) {

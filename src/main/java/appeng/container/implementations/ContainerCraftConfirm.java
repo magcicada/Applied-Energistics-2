@@ -218,11 +218,7 @@ public class ContainerCraftConfirm extends AEBaseContainer {
                         IAEItemStack m = null;
                         if (c != null && this.result.isSimulation()) {
                             m = o.copy();
-                            if (items.getStorageList().findPrecise(o) != null) {
-                                o = items.extractItems(o, Actionable.SIMULATE, this.getActionSource());
-                            } else {
-                                o = null;
-                            }
+                            o = items.extractItems(o, Actionable.SIMULATE, this.getActionSource());
 
                             if (o == null) {
                                 o = m.copy();
