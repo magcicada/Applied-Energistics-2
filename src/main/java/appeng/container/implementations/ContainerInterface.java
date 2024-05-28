@@ -39,11 +39,11 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
     @GuiSync(4)
     public LockCraftingMode lMode = LockCraftingMode.NONE;
 
-    @GuiSync(5)
-    public YesNo iTermMode = YesNo.YES;
-
     @GuiSync(7)
     public int patternExpansions = 0;
+
+    @GuiSync(8)
+    public YesNo iTermMode = YesNo.YES;
 
     public ContainerInterface(final InventoryPlayer ip, final IInterfaceHost te) {
         super(ip, te.getInterfaceDuality().getHost());
