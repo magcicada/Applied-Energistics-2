@@ -115,6 +115,7 @@ public class PartOreDicStorageBus extends PartStorageBus {
                 this.handler.setPriority(this.priority);
                 this.handler.setPartitionList(this.getPriorityList());
                 this.handler.setStorageFilter((StorageFilter) this.getConfigManager().getSetting(Settings.STORAGE_FILTER));
+                this.handler.setSticky(this.getInstalledUpgrades(Upgrades.STICKY) > 0);
 
                 if (inv instanceof IBaseMonitor) {
                     if (((AccessRestriction) ((ConfigManager) this.getConfigManager()).getSetting(Settings.ACCESS)).hasPermission(AccessRestriction.READ)) {

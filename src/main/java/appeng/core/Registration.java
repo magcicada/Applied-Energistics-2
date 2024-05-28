@@ -54,8 +54,8 @@ import appeng.core.stats.PartItemPredicate;
 import appeng.core.stats.Stats;
 import appeng.core.worlddata.SpatialDimensionManager;
 import appeng.fluids.registries.BasicFluidCellGuiHandler;
-import appeng.hooks.WrenchClickHook;
 import appeng.hooks.TickHandler;
+import appeng.hooks.WrenchClickHook;
 import appeng.items.materials.ItemMaterial;
 import appeng.items.parts.ItemFacade;
 import appeng.items.parts.ItemPart;
@@ -405,6 +405,9 @@ final class Registration {
         Upgrades.INVERTER.registerItem(parts.storageBus(), 1);
         Upgrades.CAPACITY.registerItem(parts.storageBus(), 5);
         Upgrades.STICKY.registerItem(parts.storageBus(), 1);
+
+        // OreDict Storage Bus
+        Upgrades.STICKY.registerItem(parts.oreDictStorageBus(), 1);
 
         // Storage Bus Fluids
         Upgrades.INVERTER.registerItem(parts.fluidStorageBus(), 1);

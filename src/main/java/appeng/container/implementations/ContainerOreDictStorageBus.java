@@ -1,15 +1,12 @@
 package appeng.container.implementations;
 
 import appeng.api.AEApi;
-import appeng.api.config.AccessRestriction;
-import appeng.api.config.SecurityPermissions;
-import appeng.api.config.Settings;
-import appeng.api.config.StorageFilter;
+import appeng.api.config.*;
 import appeng.api.storage.IMEInventory;
 import appeng.api.storage.channels.IItemStorageChannel;
 import appeng.api.storage.data.IAEItemStack;
-import appeng.container.AEBaseContainer;
 import appeng.container.guisync.GuiSync;
+import appeng.container.slot.SlotRestrictedInput;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketValueConfig;
 import appeng.parts.misc.PartOreDicStorageBus;
@@ -18,6 +15,7 @@ import appeng.util.item.AEItemStack;
 import appeng.util.item.OreReference;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.io.IOException;
@@ -26,7 +24,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 
-public class ContainerOreDictStorageBus extends AEBaseContainer {
+public class ContainerOreDictStorageBus extends ContainerUpgradeable {
     private final PartOreDicStorageBus part;
 
     @GuiSync(3)
@@ -34,6 +32,9 @@ public class ContainerOreDictStorageBus extends AEBaseContainer {
 
     @GuiSync(4)
     public StorageFilter storageFilter = StorageFilter.EXTRACTABLE_ONLY;
+
+    @GuiSync(7)
+    public YesNo stickyMode = YesNo.NO;
 
     public ContainerOreDictStorageBus(final InventoryPlayer ip, final PartOreDicStorageBus anchor) {
         super(ip, anchor);
@@ -47,9 +48,15 @@ public class ContainerOreDictStorageBus extends AEBaseContainer {
         if (Platform.isServer()) {
             this.setReadWriteMode((AccessRestriction) part.getConfigManager().getSetting(Settings.ACCESS));
             this.setStorageFilter((StorageFilter) part.getConfigManager().getSetting(Settings.STORAGE_FILTER));
+            this.setStickyMode((YesNo) this.getUpgradeable().getConfigManager().getSetting(Settings.STICKY_MODE));
         }
 
-        super.detectAndSendChanges();
+        super.standardDetectAndSendChanges();
+    }
+
+    @Override
+    protected int getHeight() {
+        return 170;
     }
 
     public void partition() {
@@ -115,5 +122,30 @@ public class ContainerOreDictStorageBus extends AEBaseContainer {
 
     private void setStorageFilter(final StorageFilter storageFilter) {
         this.storageFilter = storageFilter;
+    }
+
+    @Override
+    protected void setupConfig() {
+        final IItemHandler upgrades = this.getUpgradeable().getInventoryByName("upgrades");
+        this.addSlotToContainer((new SlotRestrictedInput(SlotRestrictedInput.PlacableItemType.UPGRADES, upgrades, 0, 187, 8, this.getInventoryPlayer()))
+                .setNotDraggable());
+    }
+
+    @Override
+    public int availableUpgrades() {
+        return 1;
+    }
+
+    @Override
+    protected boolean supportCapacity() {
+        return false;
+    }
+
+    public YesNo getStickyMode() {
+        return this.stickyMode;
+    }
+
+    private void setStickyMode(final YesNo stickyMode) {
+        this.stickyMode = stickyMode;
     }
 }
