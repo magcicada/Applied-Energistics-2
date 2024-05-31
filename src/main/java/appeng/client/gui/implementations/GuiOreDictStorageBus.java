@@ -4,7 +4,6 @@ import appeng.api.config.AccessRestriction;
 import appeng.api.config.ActionItems;
 import appeng.api.config.Settings;
 import appeng.api.config.StorageFilter;
-import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.widgets.GuiImgButton;
 import appeng.client.gui.widgets.GuiTabButton;
 import appeng.client.gui.widgets.MEGuiTextField;
@@ -27,7 +26,7 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 
-public class GuiOreDictStorageBus extends AEBaseGui {
+public class GuiOreDictStorageBus extends GuiUpgradeable {
     private final ContainerOreDictStorageBus container;
     PartOreDicStorageBus part;
     private GuiTabButton priority;
@@ -41,13 +40,11 @@ public class GuiOreDictStorageBus extends AEBaseGui {
         super(new ContainerOreDictStorageBus(inventoryPlayer, te));
         this.container = (ContainerOreDictStorageBus) super.inventorySlots;
         part = te;
-        this.ySize = 84;
+        this.ySize = 170;
     }
 
     @Override
-    public void initGui() {
-        super.initGui();
-
+    protected void addButtons() {
         this.searchFieldInputs = new MEGuiTextField(this.fontRenderer, this.guiLeft + 3, this.guiTop + 22, 170, 12);
         this.searchFieldInputs.setEnableBackgroundDrawing(false);
         this.searchFieldInputs.setMaxStringLength(512);
@@ -66,7 +63,6 @@ public class GuiOreDictStorageBus extends AEBaseGui {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public void fillRegex(String regex) {
@@ -143,10 +139,13 @@ public class GuiOreDictStorageBus extends AEBaseGui {
     }
 
     @Override
-    public void drawBG(int offsetX, int offsetY, int mouseX, int mouseY) {
-        this.bindTexture("guis/oredictstoragebus.png");
-        this.drawTexturedModalRect(offsetX, offsetY, 0, 0, 175, 85);
+    protected String getBackground() {
+        return "guis/oredictstoragebus.png";
+    }
 
+    @Override
+    public void drawBG(int offsetX, int offsetY, int mouseX, int mouseY) {
+        super.drawBG(offsetX, offsetY, mouseX, mouseY);
         if (this.searchFieldInputs != null) {
             this.searchFieldInputs.drawTextBox();
         }

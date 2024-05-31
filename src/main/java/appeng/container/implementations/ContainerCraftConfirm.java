@@ -31,7 +31,7 @@ import appeng.api.networking.crafting.ICraftingLink;
 import appeng.api.networking.security.IActionHost;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.networking.storage.IStorageGrid;
-import appeng.api.storage.IMEInventory;
+import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.channels.IItemStorageChannel;
 import appeng.api.storage.data.IAEItemStack;
@@ -213,7 +213,7 @@ public class ContainerCraftConfirm extends AEBaseContainer {
                         p.setStackSize(out.getCountRequestable());
 
                         final IStorageGrid sg = grid.getCache(IStorageGrid.class);
-                        final IMEInventory<IAEItemStack> items = sg.getInventory(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class));
+                        final IMEMonitor<IAEItemStack> items = sg.getInventory(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class));
 
                         IAEItemStack m = null;
                         if (c != null && this.result.isSimulation()) {
@@ -330,8 +330,7 @@ public class ContainerCraftConfirm extends AEBaseContainer {
                 if (te != null) {
                     Platform.openGUI(this.getInventoryPlayer().player, te, this.getOpenContext().getSide(), originalGui);
                 } else {
-                    if (ah instanceof IInventorySlotAware) {
-                        IInventorySlotAware i = ((IInventorySlotAware) ah);
+                    if (ah instanceof IInventorySlotAware i) {
                         Platform.openGUI(this.getInventoryPlayer().player, i.getInventorySlot(), originalGui, i.isBaubleSlot());
                     }
                 }

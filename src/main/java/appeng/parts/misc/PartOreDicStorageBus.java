@@ -19,7 +19,7 @@ import appeng.me.storage.MEInventoryHandler;
 import appeng.parts.PartModel;
 import appeng.util.ConfigManager;
 import appeng.util.Platform;
-import appeng.util.item.OreHelper;
+import appeng.util.item.OreDictFilterMatcher;
 import appeng.util.prioritylist.IPartitionList;
 import appeng.util.prioritylist.OreDictPriorityList;
 import net.minecraft.entity.player.EntityPlayer;
@@ -51,7 +51,9 @@ public class PartOreDicStorageBus extends PartStorageBus {
     public void readFromNBT(NBTTagCompound data) {
         super.readFromNBT(data);
         this.oreExp = data.getString("oreMatch");
-        this.priorityList = new OreDictPriorityList<>(OreHelper.INSTANCE.getMatchingOre(oreExp), oreExp);
+
+        var rulesList = OreDictFilterMatcher.parseExpression(oreExp);
+        this.priorityList = new OreDictPriorityList<>(rulesList);
     }
 
     @Override
@@ -113,6 +115,7 @@ public class PartOreDicStorageBus extends PartStorageBus {
                 this.handler.setPriority(this.priority);
                 this.handler.setPartitionList(this.getPriorityList());
                 this.handler.setStorageFilter((StorageFilter) this.getConfigManager().getSetting(Settings.STORAGE_FILTER));
+                this.handler.setSticky(this.getInstalledUpgrades(Upgrades.STICKY) > 0);
 
                 if (inv instanceof IBaseMonitor) {
                     if (((AccessRestriction) ((ConfigManager) this.getConfigManager()).getSetting(Settings.ACCESS)).hasPermission(AccessRestriction.READ)) {
@@ -148,7 +151,8 @@ public class PartOreDicStorageBus extends PartStorageBus {
 
     private IPartitionList<IAEItemStack> getPriorityList() {
         if (priorityList == null) {
-            this.priorityList = new OreDictPriorityList<>(OreHelper.INSTANCE.getMatchingOre(oreExp), oreExp);
+            var ruleList = OreDictFilterMatcher.parseExpression(oreExp);
+            priorityList = new OreDictPriorityList<>(ruleList);
         }
         return priorityList;
     }
@@ -164,7 +168,8 @@ public class PartOreDicStorageBus extends PartStorageBus {
         if (!this.oreExp.equals(oreMatch)) {
             this.oreExp = oreMatch;
 
-            this.priorityList = new OreDictPriorityList<>(OreHelper.INSTANCE.getMatchingOre(oreExp), oreExp);
+            var ruleList = OreDictFilterMatcher.parseExpression(oreMatch);
+            this.priorityList = new OreDictPriorityList<>(ruleList);
             this.resetCache(true);
             this.getHost().markForSave();
         }

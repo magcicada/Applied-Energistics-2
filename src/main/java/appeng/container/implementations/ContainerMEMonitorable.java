@@ -46,6 +46,9 @@ import appeng.api.util.IConfigurableObject;
 import appeng.client.gui.implementations.GuiMEMonitorable;
 import appeng.container.AEBaseContainer;
 import appeng.container.guisync.GuiSync;
+import appeng.container.slot.AppEngSlot;
+import appeng.container.slot.SlotPlayerHotBar;
+import appeng.container.slot.SlotPlayerInv;
 import appeng.container.slot.SlotRestrictedInput;
 import appeng.core.AELog;
 import appeng.core.sync.network.NetworkHandler;
@@ -60,9 +63,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IContainerListener;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -159,6 +164,51 @@ public class ContainerMEMonitorable extends AEBaseContainer implements IConfigMa
         if (bindInventory) {
             this.bindPlayerInventory(ip, 0, 0);
         }
+    }
+
+    @Override
+    public ItemStack transferStackInSlot(final EntityPlayer p, final int idx) {
+        if (Platform.isClient()) {
+            return ItemStack.EMPTY;
+        }
+
+        // Below logic is all about handling shift click for view cells
+        if (!(this.host instanceof IViewCellStorage)) {
+            return super.transferStackInSlot(p, idx);
+        }
+
+        // Is it a view cell?
+        final Slot clickSlot = this.inventorySlots.get(idx);
+        ItemStack itemStack = clickSlot.getStack();
+        if (!AEApi.instance().definitions().items().viewCell().isSameAs(itemStack)) {
+            return super.transferStackInSlot(p, idx);
+        }
+
+        // Are we clicking from the player's inventory?
+        final boolean isPlayerInventorySlot = this.inventorySlots.get(idx) instanceof SlotPlayerInv || this.inventorySlots.get(idx) instanceof SlotPlayerHotBar;
+        if (!isPlayerInventorySlot) {
+            return super.transferStackInSlot(p, idx);
+        }
+
+        // Attempt to move the item into the view cell storage
+        final IItemHandler viewCellInv = ((IViewCellStorage) this.host).getViewCellStorage();
+        for (int slot = 0; slot < viewCellInv.getSlots(); slot++) {
+            if (viewCellInv.isItemValid(slot, itemStack) && viewCellInv.getStackInSlot(slot).isEmpty()) {
+                ItemStack remainder = viewCellInv.insertItem(slot, itemStack, true);
+                if (!remainder.isEmpty()) { // That slot can't take the item
+                    continue;
+                }
+                remainder = viewCellInv.insertItem(slot, itemStack, false);
+                clickSlot.putStack(remainder);
+                this.detectAndSendChanges();
+                if (!remainder.isEmpty()) {
+                    // How??
+                    return super.transferStackInSlot(p, idx);
+                }
+                return ItemStack.EMPTY;
+            }
+        }
+        return super.transferStackInSlot(p, idx);
     }
 
     public IGridNode getNetworkNode() {

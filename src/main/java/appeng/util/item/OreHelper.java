@@ -130,10 +130,9 @@ public class OreHelper {
         }).orElse(false);
     }
 
-    public Set<Integer> getMatchingOre(String oreExp) {
+    public Set<Integer> getMatchingOre(List<OreDictFilterMatcher.MatchRule> rulesList) {
         Set<Integer> matchingIds = new HashSet<>();
 
-        List<OreDictFilterMatcher.MatchRule> rulesList = OreDictFilterMatcher.parseExpression(oreExp);
         for (String ore : OreDictionary.getOreNames()) {
             if (ore == null) {
                 continue;

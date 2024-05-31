@@ -222,6 +222,11 @@ public class TileInterface extends AENetworkInvTile implements IGridTickable, II
     }
 
     @Override
+    public void onStackReturnNetwork(IAEItemStack stack) {
+        this.duality.onStackReturnedToNetwork(stack);
+    }
+
+    @Override
     public DualityInterface getInterfaceDuality() {
         return this.duality;
     }
@@ -272,6 +277,10 @@ public class TileInterface extends AENetworkInvTile implements IGridTickable, II
     @Override
     public IAEItemStack injectCraftedItems(final ICraftingLink link, final IAEItemStack items, final Actionable mode) {
         return this.duality.injectCraftedItems(link, items, mode);
+    }
+
+    public void updateRedstoneState(){
+        this.duality.updateRedstoneState();
     }
 
     @Override

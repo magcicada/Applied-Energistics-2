@@ -11,6 +11,7 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.api.util.IClientHelper;
+import appeng.core.AEConfig;
 import appeng.core.localization.GuiText;
 import appeng.fluids.items.FluidDummyItem;
 import appeng.fluids.util.AEFluidStack;
@@ -109,7 +110,10 @@ public class ApiClientHelper implements IClientHelper {
                 }
             }
         } else {
-            if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)) {
+            if (!AEConfig.instance().showCellContentsPreview()) return;
+            if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips
+                    || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT)
+            ) {
                 cellInventory.getAvailableItems((IItemList) itemList);
                 for (IAEStack<?> s : itemList) {
                     if (s instanceof IAEItemStack) {
