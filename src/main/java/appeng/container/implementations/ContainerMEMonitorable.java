@@ -46,7 +46,6 @@ import appeng.api.util.IConfigurableObject;
 import appeng.client.gui.implementations.GuiMEMonitorable;
 import appeng.container.AEBaseContainer;
 import appeng.container.guisync.GuiSync;
-import appeng.container.slot.AppEngSlot;
 import appeng.container.slot.SlotPlayerHotBar;
 import appeng.container.slot.SlotPlayerInv;
 import appeng.container.slot.SlotRestrictedInput;
@@ -66,7 +65,6 @@ import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
@@ -89,7 +87,7 @@ public class ContainerMEMonitorable extends AEBaseContainer implements IConfigMa
     private IConfigManagerHost gui;
     private IConfigManager serverCM;
     private IGridNode networkNode;
-    protected int jeiOffset = Loader.isModLoaded("jei") ? 24 : 0;
+    protected int jeiOffset = Platform.isModLoaded("jei") ? 24 : 0;
 
 
     public ContainerMEMonitorable(final InventoryPlayer ip, final ITerminalHost monitorable) {

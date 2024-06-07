@@ -22,7 +22,7 @@ package appeng.integration;
 import appeng.api.exceptions.ModNotInstalledException;
 import appeng.core.AEConfig;
 import appeng.core.AELog;
-import net.minecraftforge.fml.common.Loader;
+import appeng.util.Platform;
 import net.minecraftforge.fml.common.ModAPIManager;
 
 
@@ -64,7 +64,7 @@ final class IntegrationNode {
                 switch (stage) {
                     case PRE_INIT:
                         final ModAPIManager apiManager = ModAPIManager.INSTANCE;
-                        boolean enabled = this.modID == null || Loader.isModLoaded(this.modID) || apiManager.hasAPI(this.modID);
+                        boolean enabled = this.modID == null || Platform.isModLoaded(this.modID) || apiManager.hasAPI(this.modID);
 
                         AEConfig.instance()
                                 .addCustomCategoryComment("ModIntegration",
