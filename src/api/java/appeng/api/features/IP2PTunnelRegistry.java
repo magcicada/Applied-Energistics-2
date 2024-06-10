@@ -24,13 +24,12 @@
 package appeng.api.features;
 
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import appeng.api.config.TunnelType;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.capabilities.Capability;
 
-import appeng.api.config.TunnelType;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 
 /**
@@ -59,6 +58,8 @@ public interface IP2PTunnelRegistry
 	 *
 	 * @return null if no attunement can be found or attunement
 	 */
-	@Nonnull
+	@Nullable
 	TunnelType getTunnelTypeByItem( ItemStack trigger );
+
+	TunnelType registerTunnelType( @Nonnull String enumName, @Nonnull ItemStack partStack );
 }
