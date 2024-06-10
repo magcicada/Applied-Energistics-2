@@ -64,7 +64,6 @@ import appeng.parts.automation.UpgradeInventory;
 import appeng.parts.misc.PartInterface;
 import appeng.tile.inventory.AppEngInternalAEInventory;
 import appeng.tile.inventory.AppEngInternalInventory;
-import appeng.tile.inventory.AppEngInternalOversizedInventory;
 import appeng.tile.inventory.AppEngNetworkInventory;
 import appeng.tile.networking.TileCableBus;
 import appeng.util.ConfigManager;
@@ -78,6 +77,7 @@ import com.google.common.primitives.Ints;
 import de.ellpeck.actuallyadditions.api.tile.IPhantomTile;
 import gregtech.api.block.machines.BlockMachine;
 import gregtech.api.metatileentity.MetaTileEntity;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Items;
@@ -128,7 +128,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     private final Accessor accessor = new Accessor();
     private boolean hasConfig = false;
     private int priority;
-    private List<ICraftingPatternDetails> craftingList = null;
+    private Set<ICraftingPatternDetails> craftingList = null;
     private List<ItemStack> waitingToSend = null;
     private IMEInventory<IAEItemStack> destination;
     private int isWorking = -1;
@@ -452,10 +452,13 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
                 this.addToCraftingList(this.patterns.getStackInSlot(x));
             }
         }
-        try {
-            this.gridProxy.getGrid().postEvent(new MENetworkCraftingPatternChange(this, this.gridProxy.getNode()));
-        } catch (GridAccessException e) {
-            e.printStackTrace();
+
+        if (newPattern || removed) {
+            try {
+                this.gridProxy.getGrid().postEvent(new MENetworkCraftingPatternChange(this, this.gridProxy.getNode()));
+            } catch (GridAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -545,7 +548,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
             if (details != null) {
                 if (this.craftingList == null) {
-                    this.craftingList = new ArrayList<>();
+                    this.craftingList = new ObjectOpenHashSet<>();
                 }
 
                 this.craftingList.add(details);
