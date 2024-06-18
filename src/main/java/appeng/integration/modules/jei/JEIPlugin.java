@@ -44,9 +44,11 @@ import mezz.jei.api.recipe.VanillaRecipeCategoryUid;
 import mezz.jei.config.Constants;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -185,8 +187,17 @@ public class JEIPlugin implements IModPlugin {
     private void registerFacadeRecipe(IDefinitions definitions, IModRegistry registry) {
         Optional<Item> itemFacade = definitions.items().facade().maybeItem();
         Optional<ItemStack> cableAnchor = definitions.parts().cableAnchor().maybeStack(1);
-        if (itemFacade.isPresent() && cableAnchor.isPresent() && AEConfig.instance().isFeatureEnabled(AEFeature.ENABLE_FACADE_CRAFTING)) {
-            registry.addRecipeRegistryPlugin(new FacadeRegistryPlugin((ItemFacade) itemFacade.get(), cableAnchor.get()));
+        if (itemFacade.isPresent()) {
+            var facade = (ItemFacade)itemFacade.get();
+            if (cableAnchor.isPresent() && AEConfig.instance().isFeatureEnabled(AEFeature.ENABLE_FACADE_CRAFTING)){
+                registry.addRecipeRegistryPlugin(new FacadeRegistryPlugin(facade, cableAnchor.get()));
+            }
+
+            // Hide facades from JEI/HEI except for the first found.
+            var list = NonNullList.<ItemStack>create();
+            facade.getSubItems(Objects.requireNonNull(facade.getCreativeTab()), list);
+            list.stream().skip(1)
+                    .forEach(registry.getJeiHelpers().getIngredientBlacklist()::addIngredientToBlacklist);
         }
     }
 
