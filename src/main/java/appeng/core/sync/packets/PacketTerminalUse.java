@@ -14,7 +14,6 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 
 public class PacketTerminalUse extends AppEngPacket {
@@ -45,7 +44,7 @@ public class PacketTerminalUse extends AppEngPacket {
 
             }
         }
-        if (Loader.isModLoaded("baubles")) {
+        if (Platform.isModLoaded("baubles")) {
             tryOpenBauble(player);
         }
     }

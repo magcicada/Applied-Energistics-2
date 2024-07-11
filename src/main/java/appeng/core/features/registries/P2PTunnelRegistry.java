@@ -37,6 +37,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.oredict.OreDictionary;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -276,5 +277,10 @@ public final class P2PTunnelRegistry implements IP2PTunnelRegistry {
 
     private void addNewAttunement(final IItemDefinition definition, final TunnelType type) {
         definition.maybeStack(1).ifPresent(definitionStack -> this.addNewAttunement(definitionStack, type));
+    }
+
+    @Override
+    public TunnelType registerTunnelType(@NotNull String enumName, @NotNull ItemStack partStack) {
+        return TunnelType.registerTunnelType(enumName, partStack);
     }
 }

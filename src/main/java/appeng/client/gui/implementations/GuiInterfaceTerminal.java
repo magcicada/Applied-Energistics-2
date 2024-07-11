@@ -54,19 +54,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.common.Loader;
 import org.lwjgl.input.Mouse;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 
 import static appeng.client.render.BlockPosHighlighter.hilightBlock;
 import static appeng.helpers.ItemStackHelper.stackFromNBT;
@@ -116,7 +109,7 @@ public class GuiInterfaceTerminal extends AEBaseGui {
         this.setScrollBar(scrollbar);
         this.xSize = 208;
         this.ySize = 255;
-        this.jeiEnabled = Loader.isModLoaded("jei");
+        this.jeiEnabled = Platform.isModLoaded("jei");
         this.jeiButtonPadding = jeiEnabled ? 22 : 0;
 
         searchFieldInputs = createTextField(86, 12, ButtonToolTips.SearchFieldInputs.getLocal());

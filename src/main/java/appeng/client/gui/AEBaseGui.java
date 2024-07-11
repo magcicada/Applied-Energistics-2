@@ -1057,7 +1057,7 @@ public abstract class AEBaseGui extends GuiContainer implements IMTModGuiContain
     @Override
     @Optional.Method(modid = "mousetweaks")
     public boolean MT_isMouseTweaksDisabled() {
-        return true;
+        return false;
     }
 
     @Override
@@ -1087,12 +1087,20 @@ public abstract class AEBaseGui extends GuiContainer implements IMTModGuiContain
     @Override
     @Optional.Method(modid = "mousetweaks")
     public boolean MT_isIgnored(Slot slot) {
-        return true;
+        return false;
     }
 
     @Override
     @Optional.Method(modid = "mousetweaks")
     public boolean MT_disableRMBDraggingFunctionality() {
-        return true;
+       if (this.dragSplitting && this.dragSplittingButton == 1) {
+           this.dragSplitting = false;
+           // Don't ignoreMouseUp on slots that can't accept the item. (crafting output, ME slot, etc.)
+           if (this.getSlotUnderMouse() != null && this.getSlotUnderMouse().isItemValid(this.mc.player.inventory.getItemStack())) {
+               this.ignoreMouseUp = true;
+           }
+           return true;
+       }
+       return false;
     }
 }

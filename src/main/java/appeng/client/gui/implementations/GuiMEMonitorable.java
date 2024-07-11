@@ -31,11 +31,7 @@ import appeng.api.util.IConfigManager;
 import appeng.api.util.IConfigurableObject;
 import appeng.client.ActionKey;
 import appeng.client.gui.AEBaseMEGui;
-import appeng.client.gui.widgets.GuiImgButton;
-import appeng.client.gui.widgets.GuiScrollbar;
-import appeng.client.gui.widgets.GuiTabButton;
-import appeng.client.gui.widgets.ISortSource;
-import appeng.client.gui.widgets.MEGuiTextField;
+import appeng.client.gui.widgets.*;
 import appeng.client.me.InternalSlotME;
 import appeng.client.me.ItemRepo;
 import appeng.client.me.SlotME;
@@ -61,7 +57,6 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.common.Loader;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -103,7 +98,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
     private int currentMouseY = 0;
     private boolean delayedUpdate;
 
-    protected int jeiOffset = Loader.isModLoaded("jei") ? 24 : 0;
+    protected int jeiOffset = Platform.isModLoaded("jei") ? 24 : 0;
 
     public GuiMEMonitorable(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         this(inventoryPlayer, te, new ContainerMEMonitorable(inventoryPlayer, te));
@@ -177,10 +172,9 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             NetworkHandler.instance().sendToServer(new PacketSwitchGuis(GuiBridge.GUI_CRAFTING_STATUS));
         }
 
-        if (btn instanceof GuiImgButton) {
+        if (btn instanceof GuiImgButton iBtn) {
             final boolean backwards = Mouse.isButtonDown(1);
 
-            final GuiImgButton iBtn = (GuiImgButton) btn;
             if (iBtn.getSetting() != Settings.ACTIONS) {
                 final Enum cv = iBtn.getCurrentValue();
                 final Enum next = Platform.rotateEnum(cv, backwards, iBtn.getSetting().getPossibleValues());

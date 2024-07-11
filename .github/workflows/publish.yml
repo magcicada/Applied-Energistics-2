@@ -52,6 +52,20 @@ jobs:
           generate_release_notes: true
           fail_on_unmatched_files: true
 
+      - name: Publish to Maven
+        uses: gradle/gradle-build-action@v2
+        env:
+          MAVEN_USER: "${{secrets.MAVEN_USER}}"
+          MAVEN_PASSWORD: "${{secrets.MAVEN_PASSWORD}}"
+        with:
+          arguments: 'publish --daemon'
+          generate-job-summary: false
+          gradle-home-cache-includes: |
+            caches
+            jdks
+            notifications
+            wrapper
+
       - name: Publish to Curseforge
         uses: gradle/gradle-build-action@v2
         env:

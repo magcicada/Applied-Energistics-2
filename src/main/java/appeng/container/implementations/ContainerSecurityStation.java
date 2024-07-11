@@ -30,13 +30,13 @@ import appeng.container.slot.SlotOutput;
 import appeng.container.slot.SlotRestrictedInput;
 import appeng.tile.inventory.AppEngInternalInventory;
 import appeng.tile.misc.TileSecurityStation;
+import appeng.util.Platform;
 import appeng.util.inv.IAEAppEngInventory;
 import appeng.util.inv.InvOperation;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IContainerListener;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.items.IItemHandler;
 
 
@@ -53,7 +53,7 @@ public class ContainerSecurityStation extends ContainerMEMonitorable implements 
     @GuiSync(0)
     public int permissionMode = 0;
 
-    protected int jeiOffset = Loader.isModLoaded("jei") ? 24 : 0;
+    protected int jeiOffset = Platform.isModLoaded("jei") ? 24 : 0;
 
     public ContainerSecurityStation(final InventoryPlayer ip, final ITerminalHost monitorable) {
         super(ip, monitorable, false);
@@ -75,8 +75,7 @@ public class ContainerSecurityStation extends ContainerMEMonitorable implements 
             final SecurityPermissions permission = SecurityPermissions.valueOf(value);
 
             final ItemStack a = this.configSlot.getStack();
-            if (!a.isEmpty() && a.getItem() instanceof IBiometricCard) {
-                final IBiometricCard bc = (IBiometricCard) a.getItem();
+            if (!a.isEmpty() && a.getItem() instanceof IBiometricCard bc) {
                 if (bc.hasPermission(a, permission)) {
                     bc.removePermission(a, permission);
                 } else {
@@ -95,8 +94,7 @@ public class ContainerSecurityStation extends ContainerMEMonitorable implements 
         this.setPermissionMode(0);
 
         final ItemStack a = this.configSlot.getStack();
-        if (!a.isEmpty() && a.getItem() instanceof IBiometricCard) {
-            final IBiometricCard bc = (IBiometricCard) a.getItem();
+        if (!a.isEmpty() && a.getItem() instanceof IBiometricCard bc) {
 
             for (final SecurityPermissions sp : bc.getPermissions(a)) {
                 this.setPermissionMode(this.getPermissionMode() | (1 << sp.ordinal()));
