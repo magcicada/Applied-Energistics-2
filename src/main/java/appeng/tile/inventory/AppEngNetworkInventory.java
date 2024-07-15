@@ -39,7 +39,9 @@ public class AppEngNetworkInventory extends AppEngInternalOversizedInventory {
                 return super.insertItem(slot, stack, simulate);
             } else if (overflow != null) {
                 if (!simulate) {
-                    this.getTileEntity().onChangeInventory(this, slot, InvOperation.INSERT, ItemStack.EMPTY, stack);
+                    ItemStack added = stack.copy();
+                    added.setCount((int) (stack.getCount() - overflow.getStackSize()));
+                    this.getTileEntity().onChangeInventory(this, slot, InvOperation.INSERT, ItemStack.EMPTY, added);
                 }
                 return overflow.createItemStack();
             } else {
