@@ -66,11 +66,11 @@ public class ContainerMEPortableTerminal extends ContainerMEMonitorable implemen
             this.slot = -1;
             this.lockPlayerInventorySlot(ip.currentItem);
         }
-        for (int i = 0; i < ip.mainInventory.size(); i++) {
-            if (ip.mainInventory.get(i).getItem() instanceof IWirelessTermHandler) {
-                this.lockPlayerInventorySlot(i);
-            }
-        }
+//        for (int i = 0; i < ip.mainInventory.size(); i++) {
+//            if (ip.mainInventory.get(i).getItem() instanceof IWirelessTermHandler) {
+//                this.lockPlayerInventorySlot(i);
+//            }
+//        }
 
         this.bindPlayerInventory(ip, 0, 0);
 

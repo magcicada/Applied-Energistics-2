@@ -35,6 +35,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 
 import java.util.*;
 
@@ -56,7 +58,7 @@ public class EnergyGridCache implements IEnergyGrid {
     // Should only be modified from the add/remove methods below to guard against
     // concurrent modifications
     private final double averageLength = 40.0;
-    private final Set<IAEPowerStorage> providers = new LinkedHashSet<>();
+    private final Set<IAEPowerStorage> providers = new ReferenceLinkedOpenHashSet<>();
     // Used to track whether an extraction is currently in progress, to fail fast
     // when something externally
     // modifies the energy grid.
@@ -64,7 +66,7 @@ public class EnergyGridCache implements IEnergyGrid {
 
     // Should only be modified from the add/remove methods below to guard against
     // concurrent modifications
-    private final Set<IAEPowerStorage> requesters = new LinkedHashSet<>();
+    private final Set<IAEPowerStorage> requesters = new ReferenceLinkedOpenHashSet<>();
     // Used to track whether an injection is currently in progress, to fail fast
     // when something externally
     // modifies the energy grid.
@@ -72,7 +74,7 @@ public class EnergyGridCache implements IEnergyGrid {
 
     private final Multiset<IEnergyGridProvider> energyGridProviders = HashMultiset.create();
     private final IGrid myGrid;
-    private final HashMap<IGridNode, IEnergyWatcher> watchers = new HashMap<>();
+    private final Map<IGridNode, IEnergyWatcher> watchers = new IdentityHashMap<>();
 
     /**
      * estimated power available.
@@ -101,10 +103,10 @@ public class EnergyGridCache implements IEnergyGrid {
     private double lastStoredPower = -1;
 
     private final GridPowerStorage localStorage = new GridPowerStorage();
-    private final Set<IAEPowerStorage> providerToRemove = new HashSet<>();
-    private final Set<IAEPowerStorage> requesterToRemove = new HashSet<>();
-    private final Set<IAEPowerStorage> providersToAdd = new HashSet<>();
-    private final Set<IAEPowerStorage> requesterToAdd = new HashSet<>();
+    private final Set<IAEPowerStorage> providerToRemove = new ReferenceOpenHashSet<>();
+    private final Set<IAEPowerStorage> requesterToRemove = new ReferenceOpenHashSet<>();
+    private final Set<IAEPowerStorage> providersToAdd = new ReferenceOpenHashSet<>();
+    private final Set<IAEPowerStorage> requesterToAdd = new ReferenceOpenHashSet<>();
 
     public EnergyGridCache(final IGrid g) {
         this.myGrid = g;
@@ -212,7 +214,7 @@ public class EnergyGridCache implements IEnergyGrid {
     public double extractAEPower(final double amt, final Actionable mode, final PowerMultiplier pm) {
         final double toExtract = pm.multiply(amt);
         final Queue<IEnergyGridProvider> toVisit = new PriorityQueue<>(COMPARATOR_HIGHEST_AMOUNT_STORED_FIRST);
-        final Set<IEnergyGridProvider> visited = new HashSet<>();
+        final Set<IEnergyGridProvider> visited = new ReferenceOpenHashSet<>();
 
         double extracted = 0;
         toVisit.add(this);
@@ -269,8 +271,8 @@ public class EnergyGridCache implements IEnergyGrid {
         double extractedPower = 0;
 
         this.providers.addAll(providersToAdd);
-        providersToAdd.clear();
-        providers.removeIf(providerToRemove::contains);
+        this.providersToAdd.clear();
+        this.providers.removeAll(providerToRemove);
         this.providerToRemove.clear();
 
         final Iterator<IAEPowerStorage> it = this.providers.iterator();
@@ -397,7 +399,7 @@ public class EnergyGridCache implements IEnergyGrid {
     @Override
     public double injectPower(final double amt, final Actionable mode) {
         final Queue<IEnergyGridProvider> toVisit = new PriorityQueue<>(COMPARATOR_LOWEST_PERCENTAGE_FIRST);
-        final Set<IEnergyGridProvider> visited = new HashSet<>();
+        final Set<IEnergyGridProvider> visited = new ReferenceOpenHashSet<>();
         toVisit.add(this);
 
         double leftover = amt;
@@ -432,7 +434,7 @@ public class EnergyGridCache implements IEnergyGrid {
     @Override
     public double getEnergyDemand(final double maxRequired) {
         final Queue<IEnergyGridProvider> toVisit = new PriorityQueue<>(COMPARATOR_LOWEST_PERCENTAGE_FIRST);
-        final Set<IEnergyGridProvider> visited = new HashSet<>();
+        final Set<IEnergyGridProvider> visited = new ReferenceOpenHashSet<>();
         toVisit.add(this);
 
         double required = 0;

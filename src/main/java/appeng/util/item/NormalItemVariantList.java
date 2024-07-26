@@ -20,8 +20,10 @@ package appeng.util.item;
 
 import appeng.api.config.FuzzyMode;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.core.AELog;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.util.Collection;
 import java.util.Map;

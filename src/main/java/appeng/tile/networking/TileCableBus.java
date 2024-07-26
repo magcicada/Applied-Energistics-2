@@ -27,6 +27,7 @@ import appeng.api.util.AECableType;
 import appeng.api.util.AEColor;
 import appeng.api.util.AEPartLocation;
 import appeng.api.util.DimensionalCoord;
+import appeng.core.AELog;
 import appeng.helpers.AEMultiTile;
 import appeng.helpers.ICustomCollision;
 import appeng.hooks.TickHandler;
