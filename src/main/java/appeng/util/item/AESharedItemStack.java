@@ -23,6 +23,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 final class AESharedItemStack {
@@ -30,6 +31,8 @@ final class AESharedItemStack {
     private final ItemStack itemStack;
     private final int itemDamage;
     private final int hashCode;
+
+    private final AtomicInteger referenceCount = new AtomicInteger();
 
     public AESharedItemStack(final ItemStack itemStack) {
         this(itemStack, itemStack.getItemDamage());
@@ -47,6 +50,17 @@ final class AESharedItemStack {
 
         // Ensure this is always called last.
         this.hashCode = this.makeHashCode();
+    }
+
+    AESharedItemStack incrementReferenceCount() {
+        this.referenceCount.decrementAndGet();
+        return this;
+    }
+
+    void decrementReferenceCount() {
+        if (this.referenceCount.decrementAndGet() <= 0) {
+            AEItemStackRegistry.unregisterStack(this);
+        }
     }
 
     ItemStack getDefinition() {
@@ -90,28 +104,30 @@ final class AESharedItemStack {
         } else if (stackA.getItemDamage() != stackB.getItemDamage()) {
             return false;
         }
+
         NBTTagCompound stackATag = stackA.getTagCompound();
         NBTTagCompound stackBTag = stackB.getTagCompound();
-        if ((stackATag == null || stackATag.isEmpty()) && (stackBTag != null && !stackBTag.isEmpty())) {
-            // stackA has no tag but stackB tag is not empty, is invalid.
-            return false;
-        }
-        if ((stackATag != null && !stackATag.isEmpty())) {
+
+        if (stackATag == null || stackATag.isEmpty()) {
+            if (stackBTag != null && !stackBTag.isEmpty()) {
+                return false; // stackA has no tag but stackB tag is not empty, is invalid.
+            }
+        } else {
             if (stackBTag == null || stackBTag.isEmpty()) {
-                // stackA has tag but stackB has no tag, is invalid.
-                return false;
+                return false; // stackA has tag but stackB has no tag, is invalid.
             }
             if (!stackATag.equals(stackBTag)) {
-                // Different tag, is invalid.
-                return false;
+                return false; // Different tag, is invalid.
             }
         }
         return stackA.areCapsCompatible(stackB);
     }
 
     private int makeHashCode() {
-        NBTTagCompound tag = this.itemStack.getTagCompound();
-        return Objects.hash(this.itemStack.getItem(), this.itemDamage, tag != null && !tag.isEmpty() ? tag : 0);
+        final NBTTagCompound tag = this.itemStack.getTagCompound();
+        final int combinedHashCode =  Long.hashCode(System.identityHashCode(this.itemStack.getItem()) & 0xFFFFFFFFL | (this.itemDamage & 0xFFFFFFFFL) << 32);
+        final int tagHashCode = tag != null && !tag.isEmpty() ? tag.hashCode() : 0;
+        return tagHashCode != 0 ? combinedHashCode ^ tagHashCode : combinedHashCode;
     }
 
 }

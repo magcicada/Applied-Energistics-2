@@ -43,26 +43,31 @@ import appeng.me.storage.ItemWatcher;
 import appeng.me.storage.NetworkInventoryHandler;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public class GridStorageCache implements IStorageGrid {
 
     private final IGrid myGrid;
-    private final HashSet<ICellProvider> activeCellProviders = new HashSet<>();
-    private final HashSet<ICellProvider> inactiveCellProviders = new HashSet<>();
+    private final Set<ICellProvider> activeCellProviders = new ReferenceOpenHashSet<>();
+    private final Set<ICellProvider> inactiveCellProviders = new ReferenceOpenHashSet<>();
     private final SetMultimap<IAEStack, ItemWatcher> interests = HashMultimap.create();
     private final GenericInterestManager<ItemWatcher> interestManager = new GenericInterestManager<>(this.interests);
-    private final HashMap<IGridNode, IStackWatcher> watchers = new HashMap<>();
+    private final Map<IGridNode, IStackWatcher> watchers = new Reference2ObjectOpenHashMap<>();
     private final Map<IStorageChannel<? extends IAEStack>, NetworkInventoryHandler<?>> storageNetworks;
     private final Map<IStorageChannel<? extends IAEStack>, NetworkMonitor<?>> storageMonitors;
     private int localDepth;
 
     public GridStorageCache(final IGrid g) {
         this.myGrid = g;
-        this.storageNetworks = new IdentityHashMap<>();
-        this.storageMonitors = new IdentityHashMap<>();
+        this.storageNetworks = new Reference2ObjectOpenHashMap<>();
+        this.storageMonitors = new Reference2ObjectOpenHashMap<>();
 
         AEApi.instance().storage().storageChannels().forEach(channel -> this.storageMonitors.put(channel, new NetworkMonitor<>(this, channel)));
     }
@@ -74,8 +79,7 @@ public class GridStorageCache implements IStorageGrid {
 
     @Override
     public void removeNode(final IGridNode node, final IGridHost machine) {
-        if (machine instanceof ICellContainer) {
-            final ICellContainer cc = (ICellContainer) machine;
+        if (machine instanceof final ICellContainer cc) {
             final CellChangeTracker tracker = new CellChangeTracker();
 
             this.removeCellProvider(cc, tracker);
@@ -97,8 +101,7 @@ public class GridStorageCache implements IStorageGrid {
 
     @Override
     public void addNode(final IGridNode node, final IGridHost machine) {
-        if (machine instanceof ICellContainer) {
-            final ICellContainer cc = (ICellContainer) machine;
+        if (machine instanceof final ICellContainer cc) {
             this.inactiveCellProviders.add(cc);
 
             cellUpdate(null);
@@ -111,8 +114,7 @@ public class GridStorageCache implements IStorageGrid {
             }
         }
 
-        if (machine instanceof IStackWatcherHost) {
-            final IStackWatcherHost swh = (IStackWatcherHost) machine;
+        if (machine instanceof final IStackWatcherHost swh) {
             final ItemWatcher iw = new ItemWatcher(this, swh);
             this.watchers.put(node, iw);
             swh.updateWatcher(iw);
@@ -217,7 +219,7 @@ public class GridStorageCache implements IStorageGrid {
     }
 
     private <T extends IAEStack<T>, C extends IStorageChannel<T>> NetworkInventoryHandler<T> buildNetworkStorage(final C chan) {
-        final SecurityCache security = this.getGrid().getCache(ISecurityGrid.class);
+        final SecurityCache security = this.myGrid.getCache(ISecurityGrid.class);
 
         final NetworkInventoryHandler<T> storageNetwork = new NetworkInventoryHandler<>(chan, security);
 

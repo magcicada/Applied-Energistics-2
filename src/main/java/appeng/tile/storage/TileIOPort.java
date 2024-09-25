@@ -58,6 +58,7 @@ import appeng.util.inv.WrapperChainedItemHandler;
 import appeng.util.inv.WrapperFilteredItemHandler;
 import appeng.util.inv.filter.AEItemFilters;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -67,7 +68,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.items.IItemHandler;
 
 import java.io.IOException;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -362,7 +362,7 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
     private IMEInventory<?> getInv(final ItemStack is, final IStorageChannel<?> chan) {
         if (this.currentCell != is) {
             this.currentCell = is;
-            this.cachedInventories = new IdentityHashMap<>();
+            this.cachedInventories = new Reference2ObjectOpenHashMap<>();
 
             for (IStorageChannel<? extends IAEStack<?>> c : AEApi.instance().storage().storageChannels()) {
                 this.cachedInventories.put(c, AEApi.instance().registries().cell().getCellInventory(is, null, c));

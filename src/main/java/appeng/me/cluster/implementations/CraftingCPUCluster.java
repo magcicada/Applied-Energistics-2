@@ -57,6 +57,7 @@ import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
@@ -82,8 +83,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private final List<TileCraftingTile> tiles = new ArrayList<>();
     private final List<TileCraftingTile> storage = new ArrayList<>();
     private final List<TileCraftingMonitorTile> status = new ArrayList<>();
-    private final HashMap<IMEMonitorHandlerReceiver<IAEItemStack>, Object> listeners = new HashMap<>();
-    private final Map<ICraftingPatternDetails, Queue<ICraftingMedium>> visitedMediums = new HashMap<>();
+    private final Map<IMEMonitorHandlerReceiver<IAEItemStack>, Object> listeners = new Object2ObjectOpenHashMap<>();
+    private final Map<ICraftingPatternDetails, Queue<ICraftingMedium>> visitedMediums = new Object2ObjectOpenHashMap<>();
     private ICraftingLink myLastLink;
     private String myName = "";
     private boolean isDestroyed = false;
@@ -611,162 +612,178 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
             final ICraftingPatternDetails details = e.getKey();
 
-            if (this.canCraft(details, details.getCondensedInputs())) {
-                InventoryCrafting ic = null;
+            if (!this.canCraft(details, details.getCondensedInputs())) {
+                continue;
+            }
 
-                if (!visitedMediums.containsKey(details) || visitedMediums.get(details).isEmpty()) {
-                    visitedMediums.put(details, new ArrayDeque<>(cc.getMediums(details).stream().filter(Objects::nonNull).collect(Collectors.toList())));
+            if (!visitedMediums.containsKey(details) || visitedMediums.get(details).isEmpty()) {
+                List<ICraftingMedium> mediums = cc.getMediums(details);
+                Queue<ICraftingMedium> deque = new ArrayDeque<>(mediums.size() + 1);
+                for (ICraftingMedium medium : mediums) {
+                    if (medium != null) {
+                        deque.add(medium);
+                    }
+                }
+                visitedMediums.put(details, deque);
+            }
+
+            InventoryCrafting ic = null;
+
+            Queue<ICraftingMedium> craftingQueue = visitedMediums.get(details);
+            while (!craftingQueue.isEmpty()) {
+                ICraftingMedium m = craftingQueue.poll();
+
+                if (e.getValue().value <= 0) {
+                    continue;
                 }
 
-                while (!visitedMediums.get(details).isEmpty()) {
+                if (m == null || m.isBusy()) {
+                    continue;
+                }
 
-                    ICraftingMedium m = visitedMediums.get(details).poll();
+                if (ic == null) {
+                    final IAEItemStack[] input = details.getInputs();
+                    double sum = 0;
 
-                    if (e.getValue().value <= 0) {
-                        continue;
+                    for (final IAEItemStack anInput : input) {
+                        if (anInput != null) {
+                            sum += anInput.getStackSize();
+                        }
                     }
 
-                    if (m != null && !m.isBusy()) {
-                        if (ic == null) {
-                            final IAEItemStack[] input = details.getInputs();
-                            double sum = 0;
+                    // power...
+                    if (eg.extractAEPower(sum, Actionable.MODULATE, PowerMultiplier.CONFIG) < sum - 0.01) {
+                        continue;
+                    }
+                    if (details.isCraftable()) {
+                        ic = new InventoryCrafting(new ContainerNull(), 3, 3);
+                    } else {
+                        ic = new InventoryCrafting(new ContainerNull(), PatternHelper.PROCESSING_INPUT_WIDTH, PatternHelper.PROCESSING_INPUT_HEIGHT);
+                    }
 
-                            for (final IAEItemStack anInput : input) {
-                                if (anInput != null) {
-                                    sum += anInput.getStackSize();
+                    boolean found = false;
+
+                    for (int x = 0; x < input.length; x++) {
+                        if (input[x] == null) {
+                            continue;
+                        }
+
+                        found = false;
+
+                        if (details.isCraftable()) {
+                            final Collection<IAEItemStack> itemList;
+
+                            if (details.canSubstitute()) {
+                                final List<IAEItemStack> substitutes = details.getSubstituteInputs(x);
+                                itemList = new ArrayList<>(substitutes.size());
+
+                                for (IAEItemStack stack : substitutes) {
+                                    itemList.addAll(this.inventory.getItemList().findFuzzy(stack, FuzzyMode.IGNORE_ALL));
+                                }
+                            } else {
+                                itemList = new ArrayList<>(1);
+
+                                final IAEItemStack item = this.inventory.getItemList().findPrecise(input[x]);
+                                if (item != null) {
+                                    itemList.add(item);
+                                } else if (input[x].getDefinition().getItem().isDamageable() || Platform.isGTDamageableItem(input[x].getDefinition().getItem())) {
+                                    itemList.addAll(this.inventory.getItemList().findFuzzy(input[x], FuzzyMode.IGNORE_ALL));
                                 }
                             }
 
-                            // power...
-                            if (eg.extractAEPower(sum, Actionable.MODULATE, PowerMultiplier.CONFIG) < sum - 0.01) {
-                                continue;
-                            }
-                            if (details.isCraftable()) {
-                                ic = new InventoryCrafting(new ContainerNull(), 3, 3);
-                            } else {
-                                ic = new InventoryCrafting(new ContainerNull(), PatternHelper.PROCESSING_INPUT_WIDTH, PatternHelper.PROCESSING_INPUT_HEIGHT);
-                            }
+                            for (IAEItemStack fuzz : itemList) {
+                                fuzz = fuzz.copy();
+                                fuzz.setStackSize(input[x].getStackSize());
 
-                            boolean found = false;
+                                if (details.isValidItemForSlot(x, fuzz.createItemStack(), this.getWorld())) {
+                                    final IAEItemStack ais = this.inventory.extractItems(fuzz, Actionable.MODULATE, this.machineSrc);
+                                    final ItemStack is = ais == null ? ItemStack.EMPTY : ais.createItemStack();
 
-                            for (int x = 0; x < input.length; x++) {
-                                if (input[x] != null) {
-                                    found = false;
-
-                                    if (details.isCraftable()) {
-                                        final Collection<IAEItemStack> itemList;
-
-                                        if (details.canSubstitute()) {
-                                            final List<IAEItemStack> substitutes = details.getSubstituteInputs(x);
-                                            itemList = new ArrayList<>(substitutes.size());
-
-                                            for (IAEItemStack stack : substitutes) {
-                                                itemList.addAll(this.inventory.getItemList().findFuzzy(stack, FuzzyMode.IGNORE_ALL));
-                                            }
-                                        } else {
-                                            itemList = new ArrayList<>(1);
-
-                                            final IAEItemStack item = this.inventory.getItemList().findPrecise(input[x]);
-                                            if (item != null) {
-                                                itemList.add(item);
-                                            } else if (input[x].getDefinition().getItem().isDamageable() || Platform.isGTDamageableItem(input[x].getDefinition().getItem())) {
-                                                itemList.addAll(this.inventory.getItemList().findFuzzy(input[x], FuzzyMode.IGNORE_ALL));
-                                            }
-                                        }
-
-                                        for (IAEItemStack fuzz : itemList) {
-                                            fuzz = fuzz.copy();
-                                            fuzz.setStackSize(input[x].getStackSize());
-
-                                            if (details.isValidItemForSlot(x, fuzz.createItemStack(), this.getWorld())) {
-                                                final IAEItemStack ais = this.inventory.extractItems(fuzz, Actionable.MODULATE, this.machineSrc);
-                                                final ItemStack is = ais == null ? ItemStack.EMPTY : ais.createItemStack();
-
-                                                if (!is.isEmpty()) {
-                                                    this.postChange(AEItemStack.fromItemStack(is), this.machineSrc);
-                                                    ic.setInventorySlotContents(x, is);
-                                                    found = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        final IAEItemStack ais = this.inventory.extractItems(input[x].copy(), Actionable.MODULATE, this.machineSrc);
-                                        final ItemStack is = ais == null ? ItemStack.EMPTY : ais.createItemStack();
-
-                                        if (!is.isEmpty()) {
-                                            this.postChange(input[x], this.machineSrc);
-                                            ic.setInventorySlotContents(x, is);
-                                            if (is.getCount() == input[x].getStackSize()) {
-                                                found = true;
-                                                continue;
-                                            }
-                                        }
-                                    }
-
-                                    if (!found) {
+                                    if (!is.isEmpty()) {
+//                                        this.postChange(AEItemStack.fromItemStack(is), this.machineSrc);
+                                        this.postChange(ais, this.machineSrc);
+                                        ic.setInventorySlotContents(x, is);
+                                        found = true;
                                         break;
                                     }
                                 }
                             }
+                        } else {
+                            final IAEItemStack ais = this.inventory.extractItems(input[x].copy(), Actionable.MODULATE, this.machineSrc);
+                            final ItemStack is = ais == null ? ItemStack.EMPTY : ais.createItemStack();
 
-                            if (!found) {
-                                // put stuff back..
-                                for (int x = 0; x < ic.getSizeInventory(); x++) {
-                                    final ItemStack is = ic.getStackInSlot(x);
-                                    if (!is.isEmpty()) {
-                                        this.inventory.injectItems(AEItemStack.fromItemStack(is), Actionable.MODULATE, this.machineSrc);
-                                    }
+                            if (!is.isEmpty()) {
+                                this.postChange(input[x], this.machineSrc);
+                                ic.setInventorySlotContents(x, is);
+                                if (is.getCount() == input[x].getStackSize()) {
+                                    found = true;
+                                    continue;
                                 }
-                                ic = null;
-                                break;
                             }
                         }
 
-                        if (m.pushPattern(details, ic)) {
-                            this.somethingChanged = true;
-                            this.remainingOperations--;
+                        if (!found) {
+                            break;
+                        }
+                    }
 
-                            for (final IAEItemStack out : details.getCondensedOutputs()) {
-                                this.postChange(out, this.machineSrc);
-                                this.waitingFor.add(out.copy());
-                                this.postCraftingStatusChange(out.copy());
+                    if (!found) {
+                        // put stuff back..
+                        for (int x = 0; x < ic.getSizeInventory(); x++) {
+                            final ItemStack is = ic.getStackInSlot(x);
+                            if (!is.isEmpty()) {
+                                this.inventory.injectItems(AEItemStack.fromItemStack(is), Actionable.MODULATE, this.machineSrc);
                             }
+                        }
+                        ic = null;
+                        break;
+                    }
+                }
 
-                            if (details.isCraftable()) {
-                                for (int x = 0; x < ic.getSizeInventory(); x++) {
-                                    final ItemStack output = Platform.getContainerItem(ic.getStackInSlot(x));
-                                    if (!output.isEmpty()) {
-                                        final IAEItemStack cItem = AEItemStack.fromItemStack(output);
-                                        this.postChange(cItem, this.machineSrc);
-                                        this.waitingFor.add(cItem);
-                                        this.postCraftingStatusChange(cItem);
-                                    }
-                                }
-                            }
+                if (!m.pushPattern(details, ic)) {
+                    continue;
+                }
 
-                            ic = null; // hand off complete!
-                            this.markDirty();
+                this.somethingChanged = true;
+                this.remainingOperations--;
 
-                            e.getValue().value--;
-                            if (e.getValue().value <= 0) {
-                                continue;
-                            }
+                for (final IAEItemStack out : details.getCondensedOutputs()) {
+                    this.postChange(out, this.machineSrc);
+                    this.waitingFor.add(out.copy());
+                    this.postCraftingStatusChange(out.copy());
+                }
 
-                            if (this.remainingOperations == 0) {
-                                return;
-                            }
+                if (details.isCraftable()) {
+                    for (int x = 0; x < ic.getSizeInventory(); x++) {
+                        final ItemStack output = Platform.getContainerItem(ic.getStackInSlot(x));
+                        if (!output.isEmpty()) {
+                            final IAEItemStack cItem = AEItemStack.fromItemStack(output);
+                            this.postChange(cItem, this.machineSrc);
+                            this.waitingFor.add(cItem);
+                            this.postCraftingStatusChange(cItem);
                         }
                     }
                 }
 
-                if (ic != null) {
-                    // put stuff back..
-                    for (int x = 0; x < ic.getSizeInventory(); x++) {
-                        final ItemStack is = ic.getStackInSlot(x);
-                        if (!is.isEmpty()) {
-                            this.inventory.injectItems(AEItemStack.fromItemStack(is), Actionable.MODULATE, this.machineSrc);
-                        }
+                ic = null; // hand off complete!
+                this.markDirty();
+
+                e.getValue().value--;
+                if (e.getValue().value <= 0) {
+                    continue;
+                }
+
+                if (this.remainingOperations == 0) {
+                    return;
+                }
+            }
+
+            if (ic != null) {
+                // put stuff back..
+                for (int x = 0; x < ic.getSizeInventory(); x++) {
+                    final ItemStack is = ic.getStackInSlot(x);
+                    if (!is.isEmpty()) {
+                        this.inventory.injectItems(AEItemStack.fromItemStack(is), Actionable.MODULATE, this.machineSrc);
                     }
                 }
             }

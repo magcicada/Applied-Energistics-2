@@ -23,6 +23,10 @@ import appeng.api.storage.data.IAEItemStack;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
@@ -44,7 +48,7 @@ public class OreHelper {
         }
     });
 
-    private final Map<ItemRef, OreReference> references = new HashMap<>();
+    private final Map<ItemRef, OreReference> references = new Object2ObjectOpenHashMap<>();
 
     /**
      * Test if the passed {@link ItemStack} is an ore.
@@ -57,10 +61,10 @@ public class OreHelper {
 
         if (!this.references.containsKey(ir)) {
             final OreReference ref = new OreReference();
-            final Collection<Integer> ores = ref.getOres();
+            final IntSet ores = ref.getOres();
             final Collection<String> set = ref.getEquivalents();
 
-            final Set<String> toAdd = new HashSet<>();
+            final Set<String> toAdd = new ObjectOpenHashSet<>();
 
             for (final String ore : OreDictionary.getOreNames()) {
                 // skip ore if it is a match already or null.
@@ -107,9 +111,10 @@ public class OreHelper {
             return true;
         }
 
-        final Collection<Integer> bOres = b.getOres();
-        for (final Integer ore : a.getOres()) {
-            if (bOres.contains(ore)) {
+        final IntSet ores = b.getOres();
+        IntIterator it = a.getOres().iterator();
+        while (it.hasNext()) {
+            if (ores.contains(it.nextInt())) {
                 return true;
             }
         }

@@ -6,6 +6,8 @@ import appeng.util.item.OreDictFilterMatcher;
 import appeng.util.item.OreDictFilterMatcher.MatchRule;
 import appeng.util.item.OreHelper;
 import appeng.util.item.OreReference;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +28,10 @@ public class OreDictPriorityList<T extends IAEStack<T>> implements IPartitionLis
         OreReference or = ((AEItemStack) input).getOre().orElse(null);
         if (or == null) return matchesEmptyOreDict;
 
-        for (Integer oreID : or.getOres()) {
-            if (this.oreIDs.contains(oreID)) {
+        IntSet ores = or.getOres();
+        IntIterator it = ores.iterator();
+        while (it.hasNext()) {
+            if (this.oreIDs.contains(it.nextInt())) {
                 return true;
             }
         }

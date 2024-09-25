@@ -35,6 +35,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 
@@ -74,7 +75,7 @@ public class EnergyGridCache implements IEnergyGrid {
 
     private final Multiset<IEnergyGridProvider> energyGridProviders = HashMultiset.create();
     private final IGrid myGrid;
-    private final Map<IGridNode, IEnergyWatcher> watchers = new IdentityHashMap<>();
+    private final Map<IGridNode, IEnergyWatcher> watchers = new Reference2ObjectOpenHashMap<>();
 
     /**
      * estimated power available.
@@ -224,6 +225,9 @@ public class EnergyGridCache implements IEnergyGrid {
             visited.add(next);
 
             extracted += next.extractProviderPower(toExtract - extracted, mode);
+            if (extracted > toExtract) {
+                break;
+            }
 
             for (IEnergyGridProvider iEnergyGridProvider : next.providers()) {
                 if (!visited.contains(iEnergyGridProvider)) {
@@ -270,10 +274,16 @@ public class EnergyGridCache implements IEnergyGrid {
     public double extractProviderPower(final double amt, final Actionable mode) {
         double extractedPower = 0;
 
-        this.providers.addAll(providersToAdd);
-        this.providersToAdd.clear();
-        this.providers.removeAll(providerToRemove);
-        this.providerToRemove.clear();
+        if (!providerToRemove.isEmpty()) {
+            for (final IAEPowerStorage storage : providerToRemove) {
+                this.providers.remove(storage);
+            }
+            this.providerToRemove.clear();
+        }
+        if (!providersToAdd.isEmpty()) {
+            this.providers.addAll(providersToAdd);
+            this.providersToAdd.clear();
+        }
 
         final Iterator<IAEPowerStorage> it = this.providers.iterator();
 

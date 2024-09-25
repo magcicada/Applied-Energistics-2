@@ -20,6 +20,8 @@ package appeng.util.item;
 
 
 import appeng.api.storage.data.IAEItemStack;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
@@ -29,7 +31,7 @@ import java.util.*;
 public class OreReference {
 
     private final List<String> otherOptions = new ArrayList<>();
-    private final Set<Integer> ores = new HashSet<>();
+    private final IntSet ores = new IntOpenHashSet();
     private List<IAEItemStack> aeOtherOptions = null;
 
     Collection<String> getEquivalents() {
@@ -53,7 +55,8 @@ public class OreReference {
         return this.aeOtherOptions;
     }
 
-    public Collection<Integer> getOres() {
+    public IntSet getOres() {
         return this.ores;
     }
+
 }

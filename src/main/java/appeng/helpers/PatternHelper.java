@@ -26,6 +26,7 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.container.ContainerNull;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -65,8 +66,8 @@ public class PatternHelper implements ICraftingPatternDetails, Comparable<Patter
     private final Map<Integer, List<IAEItemStack>> substituteInputs;
     private final boolean isCrafting;
     private final boolean canSubstitute;
-    private final Set<TestLookup> failCache = new HashSet<>();
-    private final Set<TestLookup> passCache = new HashSet<>();
+    private final Set<TestLookup> failCache = new ObjectOpenHashSet<>();
+    private final Set<TestLookup> passCache = new ObjectOpenHashSet<>();
     private final IAEItemStack pattern;
     private int priority = 0;
 

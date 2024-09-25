@@ -19,22 +19,29 @@
 package appeng.me;
 
 
+import appeng.api.networking.IGridHost;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.IMachineSet;
 import appeng.api.networking.events.MENetworkEvent;
 import appeng.api.networking.events.MENetworkEventSubscribe;
 import appeng.core.AELog;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
 
 
 public class NetworkEventBus {
-    private static final Collection<Class> READ_CLASSES = new HashSet<>();
-    private static final Map<Class<? extends MENetworkEvent>, Map<Class, MENetworkEventInfo>> EVENTS = new HashMap<>();
+    private static final Collection<Class<?>> READ_CLASSES = new ReferenceOpenHashSet<>();
+    private static final Map<Class<? extends MENetworkEvent>, Map<Class<?>, MENetworkEventInfo>> EVENTS = new Reference2ReferenceOpenHashMap<>();
 
-    void readClass(final Class listAs, final Class c) {
+    void readClass(final Class<?> listAs, final Class<?> c) {
         if (READ_CLASSES.contains(c)) {
             return;
         }
@@ -47,10 +54,9 @@ public class NetworkEventBus {
                     final Class[] types = m.getParameterTypes();
                     if (types.length == 1) {
                         if (MENetworkEvent.class.isAssignableFrom(types[0])) {
-
-                            Map<Class, MENetworkEventInfo> classEvents = EVENTS.get(types[0]);
+                            Map<Class<?>, MENetworkEventInfo> classEvents = EVENTS.get(types[0]);
                             if (classEvents == null) {
-                                EVENTS.put(types[0], classEvents = new HashMap<>());
+                                EVENTS.put(types[0], classEvents = new Reference2ObjectOpenHashMap<>());
                             }
 
                             MENetworkEventInfo thisEvent = classEvents.get(listAs);
@@ -58,7 +64,7 @@ public class NetworkEventBus {
                                 thisEvent = new MENetworkEventInfo();
                             }
 
-                            thisEvent.Add(types[0], c, m);
+                            thisEvent.Add(types[0], c, MethodHandles.lookup().unreflect(m));
 
                             classEvents.put(listAs, thisEvent);
                         } else {
@@ -76,12 +82,12 @@ public class NetworkEventBus {
     }
 
     MENetworkEvent postEvent(final Grid g, final MENetworkEvent e) {
-        final Map<Class, MENetworkEventInfo> subscribers = EVENTS.get(e.getClass());
+        final Map<Class<?>, MENetworkEventInfo> subscribers = EVENTS.get(e.getClass());
         int x = 0;
 
         try {
             if (subscribers != null) {
-                for (final Entry<Class, MENetworkEventInfo> subscriber : subscribers.entrySet()) {
+                for (final Entry<Class<?>, MENetworkEventInfo> subscriber : subscribers.entrySet()) {
                     final MENetworkEventInfo target = subscriber.getValue();
                     final GridCacheWrapper cache = g.getCaches().get(subscriber.getKey());
                     if (cache != null) {
@@ -90,7 +96,7 @@ public class NetworkEventBus {
                     }
 
                     // events may create or remove grid nodes in rare cases
-                    final IMachineSet machines = g.getMachines(subscriber.getKey());
+                    final IMachineSet machines = g.getMachines((Class<? extends IGridHost>) subscriber.getKey());
                     final List<IGridNode> work = new ArrayList<>(machines.size());
                     machines.forEach(work::add);
 
@@ -112,7 +118,7 @@ public class NetworkEventBus {
     }
 
     MENetworkEvent postEventTo(final Grid grid, final GridNode node, final MENetworkEvent e) {
-        final Map<Class, MENetworkEventInfo> subscribers = EVENTS.get(e.getClass());
+        final Map<Class<?>, MENetworkEventInfo> subscribers = EVENTS.get(e.getClass());
         int x = 0;
 
         try {
@@ -138,11 +144,11 @@ public class NetworkEventBus {
 
     private class EventMethod {
 
-        private final Class objClass;
-        private final Method objMethod;
-        private final Class objEvent;
+        private final Class<?> objClass;
+        private final MethodHandle objMethod;
+        private final Class<?> objEvent;
 
-        public EventMethod(final Class Event, final Class ObjClass, final Method ObjMethod) {
+        public EventMethod(final Class<?> Event, final Class<?> ObjClass, final MethodHandle ObjMethod) {
             this.objClass = ObjClass;
             this.objMethod = ObjMethod;
             this.objEvent = Event;
@@ -166,9 +172,9 @@ public class NetworkEventBus {
 
     private class MENetworkEventInfo {
 
-        private final List<EventMethod> methods = new ArrayList<>();
+        private final List<EventMethod> methods = new ObjectArrayList<>();
 
-        private void Add(final Class Event, final Class ObjClass, final Method ObjMethod) {
+        private void Add(final Class<?> Event, final Class<?> ObjClass, final MethodHandle ObjMethod) {
             this.methods.add(new EventMethod(Event, ObjClass, ObjMethod));
         }
 
