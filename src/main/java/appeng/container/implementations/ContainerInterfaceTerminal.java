@@ -34,6 +34,7 @@ import appeng.core.sync.packets.PacketInventoryAction;
 import appeng.helpers.DualityInterface;
 import appeng.helpers.IInterfaceHost;
 import appeng.helpers.InventoryAction;
+import appeng.helpers.WirelessTerminalGuiObject;
 import appeng.items.misc.ItemEncodedPattern;
 import appeng.parts.misc.PartInterface;
 import appeng.parts.reporting.PartInterfaceTerminal;
@@ -65,7 +66,7 @@ import java.util.Map.Entry;
 import static appeng.helpers.ItemStackHelper.stackWriteToNBT;
 
 
-public final class ContainerInterfaceTerminal extends AEBaseContainer {
+public class ContainerInterfaceTerminal extends AEBaseContainer {
 
     /**
      * this stuff is all server side..
@@ -85,6 +86,14 @@ public final class ContainerInterfaceTerminal extends AEBaseContainer {
         }
 
         this.bindPlayerInventory(ip, 0, 0);
+    }
+
+    public ContainerInterfaceTerminal(final InventoryPlayer ip, final WirelessTerminalGuiObject guiObject) {
+        super(ip, guiObject);
+
+        if (Platform.isServer()) {
+            this.grid = guiObject.getActionableNode().getGrid();
+        }
     }
 
     @Override
