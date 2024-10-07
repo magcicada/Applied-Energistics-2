@@ -92,8 +92,13 @@ public class ContainerInterfaceTerminal extends AEBaseContainer {
         super(ip, guiObject);
 
         if (Platform.isServer()) {
-            this.grid = guiObject.getActionableNode().getGrid();
+            IGridNode node = guiObject.getActionableNode();
+            if (node != null && node.isActive()) {
+                this.grid = node.getGrid();
+            }
         }
+
+        this.bindPlayerInventory(ip, 0, 0);
     }
 
     @Override
@@ -194,14 +199,16 @@ public class ContainerInterfaceTerminal extends AEBaseContainer {
                 final AppEngSlot playerSlot;
                 try {
                     playerSlot = (AppEngSlot) this.inventorySlots.get(slot);
-                } catch (IndexOutOfBoundsException ignored) { return; }
+                } catch (IndexOutOfBoundsException ignored) {
+                    return;
+                }
 
                 if (!playerSlot.isPlayerSide() || !playerSlot.getHasStack()) return;
 
                 var itemStack = playerSlot.getStack();
                 if (!itemStack.isEmpty()) {
                     var handler = new WrapperFilteredItemHandler(
-                        new WrapperRangeItemHandler(inv.server, 0, 9 * (inv.numUpgrades + 1)), new PatternSlotFilter());
+                            new WrapperRangeItemHandler(inv.server, 0, 9 * (inv.numUpgrades + 1)), new PatternSlotFilter());
                     playerSlot.putStack(ItemHandlerHelper.insertItem(handler, itemStack, false));
                     detectAndSendChanges();
                 }
@@ -397,7 +404,7 @@ public class ContainerInterfaceTerminal extends AEBaseContainer {
                     if (slot instanceof SlotDisconnected slotDisconnected && !slot.getHasStack()) {
                         // Signal the server to move the pattern.
                         var packet = new PacketInventoryAction(InventoryAction.PLACE_SINGLE,
-                            playerAppEngSlot.slotNumber, slotDisconnected.getSlot().getId());
+                                playerAppEngSlot.slotNumber, slotDisconnected.getSlot().getId());
 
                         NetworkHandler.instance().sendToServer(packet);
 
