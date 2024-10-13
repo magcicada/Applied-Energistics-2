@@ -19,7 +19,7 @@ public class ContainerWirelessInterfaceTerminal extends ContainerInterfaceTermin
     private int ticks = 0;
 
     public ContainerWirelessInterfaceTerminal(InventoryPlayer ip, WirelessTerminalGuiObject guiObject) {
-        super(ip, guiObject);
+        super(ip, guiObject,false);
 
         if (guiObject != null) {
             final int slotIndex = guiObject.getInventorySlot();
@@ -28,9 +28,11 @@ public class ContainerWirelessInterfaceTerminal extends ContainerInterfaceTermin
             }
             this.slot = slotIndex;
         } else {
-            this.slot = -1;
             this.lockPlayerInventorySlot(ip.currentItem);
+            this.slot = -1;
         }
+
+        this.bindPlayerInventory(ip,0,0);
 
         this.wirelessTerminalGUIObject = guiObject;
     }

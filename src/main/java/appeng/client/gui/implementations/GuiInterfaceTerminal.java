@@ -31,6 +31,7 @@ import appeng.client.gui.widgets.MEGuiTooltipTextField;
 import appeng.client.me.ClientDCInternalInv;
 import appeng.client.me.SlotDisconnected;
 import appeng.container.implementations.ContainerInterfaceTerminal;
+import appeng.container.implementations.ContainerWirelessInterfaceTerminal;
 import appeng.container.slot.AppEngSlot;
 import appeng.core.AEConfig;
 import appeng.core.AppEng;
@@ -127,7 +128,7 @@ public class GuiInterfaceTerminal extends AEBaseGui {
     }
 
     public GuiInterfaceTerminal(final InventoryPlayer inventoryPlayer, final WirelessTerminalGuiObject guiObject) {
-        super(new ContainerInterfaceTerminal(inventoryPlayer, guiObject));
+        super(new ContainerWirelessInterfaceTerminal(inventoryPlayer, guiObject));
 
         final GuiScrollbar scrollbar = new GuiScrollbar();
         this.setScrollBar(scrollbar);

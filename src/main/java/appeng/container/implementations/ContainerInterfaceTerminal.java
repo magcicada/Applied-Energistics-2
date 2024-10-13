@@ -88,7 +88,7 @@ public class ContainerInterfaceTerminal extends AEBaseContainer {
         this.bindPlayerInventory(ip, 0, 0);
     }
 
-    public ContainerInterfaceTerminal(final InventoryPlayer ip, final WirelessTerminalGuiObject guiObject) {
+    public ContainerInterfaceTerminal(final InventoryPlayer ip, final WirelessTerminalGuiObject guiObject, boolean bindInventory) {
         super(ip, guiObject);
 
         if (Platform.isServer()) {
@@ -98,7 +98,9 @@ public class ContainerInterfaceTerminal extends AEBaseContainer {
             }
         }
 
-        this.bindPlayerInventory(ip, 0, 0);
+        if (bindInventory) {
+            this.bindPlayerInventory(ip, 0, 0);
+        }
     }
 
     @Override
