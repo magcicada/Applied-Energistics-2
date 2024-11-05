@@ -1018,6 +1018,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         final World w = tile.getWorld();
 
         if (getCraftingLockedReason() != LockCraftingMode.NONE) {
+            AELog.info("lock reason"+getCraftingLockedReason());
             return false;
         }
 
