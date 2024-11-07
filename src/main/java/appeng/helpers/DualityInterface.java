@@ -1018,7 +1018,6 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         final World w = tile.getWorld();
 
         if (getCraftingLockedReason() != LockCraftingMode.NONE) {
-            AELog.info("lock reason"+getCraftingLockedReason());
             return false;
         }
 
@@ -1171,7 +1170,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     /**
      * Gets if the crafting lock is in effect and why.
      *
-     * @return null if the lock isn't in effect
+     * @return {@link LockCraftingMode#NONE} if the lock isn't in effect
      */
     public LockCraftingMode getCraftingLockedReason() {
         var lockMode = cm.getSetting(Settings.UNLOCK);
