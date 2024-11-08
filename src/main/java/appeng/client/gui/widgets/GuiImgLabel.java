@@ -56,7 +56,9 @@ public class GuiImgLabel extends GuiLabel implements ITooltip {
 
             if (labelSetting != null && currentValue != null) {
                 LabelAppearance labelAppearance = appearances.get(new GuiImgButton.EnumPair(this.labelSetting, this.currentValue));
-                fontRenderer.drawString(I18n.translateToLocal(labelAppearance.displayLabel), x + 16, y + 5, labelAppearance.color);
+                String translated = I18n.translateToLocal(labelAppearance.displayLabel);
+                fontRenderer.drawString(translated, x + 16, y + 5, labelAppearance.color);
+                width = 16 + fontRenderer.getStringWidth(translated);
             }
         }
     }
@@ -118,12 +120,12 @@ public class GuiImgLabel extends GuiLabel implements ITooltip {
 
     @Override
     public int getWidth() {
-        return 16;
+        return width;
     }
 
     @Override
     public int getHeight() {
-        return 16;
+        return height;
     }
 
     @Override

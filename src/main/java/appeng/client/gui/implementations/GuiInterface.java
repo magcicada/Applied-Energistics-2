@@ -75,10 +75,9 @@ public class GuiInterface extends GuiUpgradeable {
     }
 
     protected void addLabel() {
-        this.lockReason = new GuiImgLabel(this.fontRenderer, guiLeft + 50, guiTop + 12, Settings.UNLOCK, LockCraftingMode.NONE);
+        this.lockReason = new GuiImgLabel(this.fontRenderer, guiLeft + 40, guiTop + 12, Settings.UNLOCK, LockCraftingMode.NONE);
         labelList.add(lockReason);
     }
-
 
     @Override
     public void drawFG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
