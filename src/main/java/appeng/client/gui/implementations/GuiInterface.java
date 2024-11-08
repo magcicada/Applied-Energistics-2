@@ -75,7 +75,7 @@ public class GuiInterface extends GuiUpgradeable {
     }
 
     protected void addLabel() {
-        this.lockReason = new GuiImgLabel(this.fontRenderer, 190, 6 + 73 + 3, Settings.UNLOCK, LockCraftingMode.NONE);
+        this.lockReason = new GuiImgLabel(this.fontRenderer, guiLeft + 50, guiTop + 12, Settings.UNLOCK, LockCraftingMode.NONE);
         labelList.add(lockReason);
     }
 

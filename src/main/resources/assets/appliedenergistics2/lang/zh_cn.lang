@@ -260,6 +260,10 @@ gui.appliedenergistics2.Sticky=粘滞
 gui.appliedenergistics2.FluidTerminal=流体终端
 gui.appliedenergistics2.NoneLock=合成已解锁
 gui.appliedenergistics2.CraftingLock=合成已锁定
+gui.appliedenergistics2.LowRedstoneLock=由于缺少红石信号而锁定
+gui.appliedenergistics2.HighRedstoneLock=由于红石信号而锁定
+gui.appliedenergistics2.ResultLock=等待样板输出解锁
+gui.appliedenergistics2.UntilPulseUnlock=等待红石脉冲解锁
 
 // GUI Tooltips
 gui.tooltips.appliedenergistics2.Stash=存储物品

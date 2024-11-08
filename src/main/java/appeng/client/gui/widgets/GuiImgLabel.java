@@ -32,7 +32,6 @@ public class GuiImgLabel extends GuiLabel implements ITooltip {
 
     private final Enum labelSetting;
     private Enum currentValue;
-    //    private final int iconX;
     private static Map<GuiImgButton.EnumPair, LabelAppearance> appearances;
     private final FontRenderer fontRenderer;
 

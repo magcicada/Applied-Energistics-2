@@ -1520,7 +1520,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     /**
      * @return Null if {@linkplain #getCraftingLockedReason()} is not {@link LockCraftingMode#LOCK_UNTIL_RESULT}.
      */
-    @org.jetbrains.annotations.Nullable
+    @Nullable
     public IAEItemStack getUnlockStack() {
         return unlockStack;
     }
