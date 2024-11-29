@@ -209,7 +209,11 @@ public enum GuiText {
 
     // Used in Crafting Toasts
     CraftingToastDone,
-    CraftingToastCancelled;
+    CraftingToastCancelled,
+
+    CanBeEnchanted,
+    IncreasedEnergyUseFromEnchants,
+    Deprecated;
 
     private final String root;
 
