@@ -1455,7 +1455,13 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
                 }
 
                 if (what.getItem() != Items.AIR) {
-                    return what.getItem().getTranslationKey(what);
+                    /* If use getTranslationKey(), it will return incomplete translationKey sometimes.
+                     * Such as small item output of a formed machine in mod Modular Machinery Community Edition.
+                     * getTranslationKey() returns tile.modularmachinery.blockinputbus
+                     * getUnlocalizedNameInefficiently() return tile.modularmachinery.blockinputbus.small
+                     * I don't know why they return different result.
+                     */
+                    return what.getItem().getUnlocalizedNameInefficiently(what);
                 }
 
                 final Item item = Item.getItemFromBlock(directedBlock);
