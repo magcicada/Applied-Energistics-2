@@ -1455,11 +1455,20 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
                 }
 
                 if (what.getItem() != Items.AIR) {
-                    /* If use getTranslationKey(), it will return incomplete translationKey sometimes.
-                     * Such as small item output of a formed machine in mod Modular Machinery Community Edition.
-                     * getTranslationKey() returns tile.modularmachinery.blockinputbus
-                     * getUnlocalizedNameInefficiently() return tile.modularmachinery.blockinputbus.small
-                     * I don't know why they return different result.
+                    /* FIX ME:
+                     * getTranslationKey() and getUnlocalizedNameInefficiently() have different return values in some mod 
+                     *
+                     * For small item output of a formed machine in mod Modular Machinery Community Edition.
+                     * getTranslationKey() returns "tile.modularmachinery.blockinputbus"
+                     * getUnlocalizedNameInefficiently() return "tile.modularmachinery.blockinputbus.small"
+                     * Because modular machinery community edition overides getUnlocalizedNameInefficiently()
+                     * 
+                     * For the Thermal Expansion
+                     * getTranslationKey() returns complete key ending with ".name".
+                     * getUnlocalizedNameInefficiently() returns localized name
+                     * Because CoFH Core overrides method getTranslationKey()
+                     * 
+                     * So is code is invalid to Thermal Expansion.
                      */
                     return what.getItem().getUnlocalizedNameInefficiently(what);
                 }
