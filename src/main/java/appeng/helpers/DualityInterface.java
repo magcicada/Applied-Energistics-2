@@ -1158,7 +1158,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
             }
             case LOCK_UNTIL_RESULT -> {
                 unlockEvent = UnlockCraftingEvent.RESULT;
-                unlockStack = pattern.getPrimaryOutput();
+                unlockStack = pattern.getPrimaryOutput().copy();
                 saveChanges();
             }
         }
