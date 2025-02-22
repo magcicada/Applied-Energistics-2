@@ -72,7 +72,7 @@ public class GuiInterfaceTerminal extends AEBaseGui {
     protected static final int OFFSET_X = 21;
     protected final GuiText guiTitle;
     private static final int MAGIC_HEIGHT_NUMBER = 52 + 99;
-    private static final String MOLECULAR_ASSEMBLER = "molecular assembler";
+    private static final String MOLECULAR_ASSEMBLER = "tile.appliedenergistics2.molecular_assembler";
 
     private final boolean jeiEnabled;
     private final int jeiButtonPadding;
@@ -562,7 +562,8 @@ public class GuiInterfaceTerminal extends AEBaseGui {
                 continue;
             }
             // Exit if molecular assembler filter is on and this is not a molecular assembler
-            if (onlyMolecularAssemblers && !entry.getName().toLowerCase().contains(MOLECULAR_ASSEMBLER)) {
+            // Forge documantation said unlocalized name shouldn't be use for logic, so we might need a better way......
+            if (onlyMolecularAssemblers && !entry.getUnlocalizedName().equals(MOLECULAR_ASSEMBLER)) {
                 cachedSearch.remove(entry);
                 continue;
             }
