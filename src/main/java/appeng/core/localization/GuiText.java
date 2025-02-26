@@ -19,6 +19,8 @@
 package appeng.core.localization;
 
 
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.translation.I18n;
 
 
@@ -208,7 +210,11 @@ public enum GuiText {
 
     // Used in Crafting Toasts
     CraftingToastDone,
-    CraftingToastCancelled;
+    CraftingToastCancelled,
+
+    CanBeEnchanted,
+    IncreasedEnergyUseFromEnchants,
+    Deprecated;
 
     private final String root;
 
@@ -222,6 +228,10 @@ public enum GuiText {
 
     public String getLocal() {
         return I18n.translateToLocal(this.getUnlocalized());
+    }
+
+    public ITextComponent getLocalizedWithArgs(Object... args) {
+        return new TextComponentTranslation(this.getUnlocalized(), args);
     }
 
     public String getUnlocalized() {
