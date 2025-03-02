@@ -1,5 +1,12 @@
 package appeng.hooks;
 
+import appeng.api.config.SecurityPermissions;
+import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridCache;
+import appeng.api.networking.IGridNode;
+import appeng.api.networking.energy.IEnergyGrid;
+import appeng.api.networking.security.ISecurityGrid;
+import appeng.api.parts.IPart;
 import appeng.api.parts.IPartHost;
 import appeng.api.parts.PartItemStack;
 import appeng.api.parts.SelectedPart;
@@ -61,9 +68,22 @@ public class WrenchClickHook {
 
                     final List<ItemStack> is = new ArrayList<>();
 
-                    if (sp.part != null) {
-                        is.add(sp.part.getItemStack(PartItemStack.WRENCH));
-                        sp.part.getDrops(is, true);
+                    IPart part = sp.part;
+                    if (part != null) {
+                        IGridNode node = part.getGridNode();
+                        if (node != null && node.isActive()) {
+                            IGrid g = node.getGrid();
+                            final IEnergyGrid eg = g.getCache(IEnergyGrid.class);
+                            if (eg.isNetworkPowered()) {
+                                ISecurityGrid sg = g.getCache(ISecurityGrid.class);
+                                if (!sg.hasPermission(player, SecurityPermissions.BUILD)) {
+                                    return;
+                                }
+                            }
+                        }
+
+                        is.add(part.getItemStack(PartItemStack.WRENCH));
+                        part.getDrops(is, true);
                         host.removePart(sp.side, false);
                     }
 

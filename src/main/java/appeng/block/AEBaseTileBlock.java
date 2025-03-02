@@ -19,9 +19,15 @@
 package appeng.block;
 
 
+import appeng.api.config.SecurityPermissions;
 import appeng.api.implementations.items.IMemoryCard;
 import appeng.api.implementations.items.MemoryCardMessages;
 import appeng.api.implementations.tiles.IColorableTile;
+import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridNode;
+import appeng.api.networking.energy.IEnergyGrid;
+import appeng.api.networking.security.IActionHost;
+import appeng.api.networking.security.ISecurityGrid;
 import appeng.api.util.AEColor;
 import appeng.api.util.AEPartLocation;
 import appeng.api.util.IOrientable;
@@ -257,6 +263,21 @@ public abstract class AEBaseTileBlock extends AEBaseBlock implements ITileEntity
 
                 if (tile instanceof TileCableBus || tile instanceof TileSkyChest) {
                     return false;
+                }
+
+                if (tile instanceof IActionHost host) {
+                    IGridNode node = host.getActionableNode();
+                    //noinspection ConstantValue
+                    if (node != null && node.isActive()) {
+                        IGrid g = node.getGrid();
+                        final IEnergyGrid eg = g.getCache(IEnergyGrid.class);
+                        if (eg.isNetworkPowered()) {
+                            ISecurityGrid sg = g.getCache(ISecurityGrid.class);
+                            if (!sg.hasPermission(player, SecurityPermissions.BUILD)) {
+                                return false;
+                            }
+                        }
+                    }
                 }
 
                 final ItemStack[] itemDropCandidates = Platform.getBlockDrops(world, pos);

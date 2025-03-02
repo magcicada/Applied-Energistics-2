@@ -29,21 +29,23 @@ import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
 import appeng.me.cache.helpers.TickTracker;
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.util.ReportedException;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 
 public class TickManagerCache implements ITickManager {
 
     private final IGrid myGrid;
-    private final HashMap<IGridNode, TickTracker> alertable = new HashMap<>();
-    private final HashMap<IGridNode, TickTracker> sleeping = new HashMap<>();
-    private final HashMap<IGridNode, TickTracker> awake = new HashMap<>();
-    private final HashMap<IGridNode, TickTracker> laterTicker = new HashMap<>();
+    private final Map<IGridNode, TickTracker> alertable = new Reference2ObjectOpenHashMap<>();
+    private final Map<IGridNode, TickTracker> sleeping = new Reference2ObjectOpenHashMap<>();
+    private final Map<IGridNode, TickTracker> awake = new Reference2ObjectOpenHashMap<>();
+    private final Map<IGridNode, TickTracker> laterTicker = new Reference2ObjectOpenHashMap<>();
     private final PriorityQueue<TickTracker> upcomingTicks = new PriorityQueue<>();
 
     private long currentTick = 0;

@@ -33,6 +33,7 @@ import appeng.me.GridNode;
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -136,6 +137,12 @@ public class SecurityCache implements ISecurityGrid {
         Preconditions.checkNotNull(player);
         Preconditions.checkNotNull(perm);
 
+        MinecraftServer server = player.getServer();
+        // If player is OP.
+        if (server != null && player.canUseCommand(server.getOpPermissionLevel(), "")) {
+            return true;
+        }
+
         final GameProfile profile = player.getGameProfile();
         final int playerID = WorldData.instance().playerData().getPlayerID(profile);
 
@@ -151,7 +158,7 @@ public class SecurityCache implements ISecurityGrid {
             final EnumSet<SecurityPermissions> perms = this.playerPerms.get(playerID);
 
             if (perms == null) {
-                return this.hasPermission(-1, perm);
+                return false;
             }
 
             return perms.contains(perm);

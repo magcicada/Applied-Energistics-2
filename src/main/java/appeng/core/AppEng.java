@@ -27,6 +27,7 @@ import appeng.core.features.AEFeature;
 import appeng.core.stats.AdvancementTriggers;
 import appeng.core.sync.GuiBridge;
 import appeng.core.sync.network.NetworkHandler;
+import appeng.core.worlddata.IWorldData;
 import appeng.core.worlddata.WorldData;
 import appeng.helpers.NonBlockingItems;
 import appeng.hooks.TickHandler;
@@ -240,7 +241,10 @@ public final class AppEng {
 
     @EventHandler
     private void serverStopped(final FMLServerStoppedEvent event) {
-        WorldData.instance().onServerStoppped();
+        IWorldData instance = WorldData.instance();
+        if (instance != null) {
+            instance.onServerStoppped();
+        }
         TickHandler.INSTANCE.shutdown();
     }
 

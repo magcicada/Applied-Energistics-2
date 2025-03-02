@@ -399,7 +399,7 @@ public abstract class AEBaseContainer extends Container {
                                     return ItemStack.EMPTY; // don't insert duplicate encoded patterns to interfaces
                                 }
 
-                                int maxSize = Math.min(tis.getMaxStackSize(), d.getSlotStackLimit());
+                                int maxSize = d instanceof SlotOversized ? d.getSlotStackLimit() : Math.min(tis.getMaxStackSize(), d.getSlotStackLimit());
 
                                 int placeAble = maxSize - t.getCount();
 
@@ -435,7 +435,7 @@ public abstract class AEBaseContainer extends Container {
 
                     if (d.isItemValid(tis)) {
                         if (!d.getHasStack()) {
-                            int maxSize = Math.min(tis.getMaxStackSize(), d.getSlotStackLimit());
+                            int maxSize = d instanceof SlotOversized ? d.getSlotStackLimit() : Math.min(tis.getMaxStackSize(), d.getSlotStackLimit());
 
                             final ItemStack tmp = tis.copy();
                             if (tmp.getCount() > maxSize) {
@@ -953,6 +953,17 @@ public abstract class AEBaseContainer extends Container {
 
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, @NotNull EntityPlayer player) {
+        if (slotId >= 0 && slotId < this.inventorySlots.size()) {
+            if (this.locked.contains(slotId)) {
+                return ItemStack.EMPTY;
+            }
+            if (clickTypeIn == ClickType.SWAP && dragType >= 0 && dragType < 9) {
+                if (this.locked.contains(dragType)) {
+                    return ItemStack.EMPTY;
+                }
+            }
+        }
+
         if (slotId >= 0 && clickTypeIn == ClickType.PICKUP) {
             final var slot = this.getSlot(slotId);
             if (slot instanceof AppEngSlot appEngSlot) {

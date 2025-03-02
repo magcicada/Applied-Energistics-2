@@ -23,37 +23,42 @@
 
 package appeng.util.item;
 
-import com.google.common.collect.MapMaker;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
-import java.util.Map;
 
 public final class AEItemStackRegistry {
 
-    private static final ItemStackHashStrategy HASH_STRATEGY = ItemStackHashStrategy.comparingAllButCount();
-    private static final Map<Integer, AESharedItemStack> REGISTRY = new MapMaker().weakValues().makeMap();
+    private static final ObjectOpenHashSet<AESharedItemStack> REGISTRY = new ObjectOpenHashSet<>();
 
     private AEItemStackRegistry() {
     }
 
-    static synchronized AESharedItemStack getRegisteredStack(final @Nonnull ItemStack itemStack) {
-        if (itemStack.isEmpty()) {
+    static synchronized AESharedItemStack getRegisteredStack(@Nonnull final ItemStack stack) {
+        if (stack.isEmpty()) {
             throw new IllegalArgumentException("stack cannot be empty");
         }
 
-        var hash = HASH_STRATEGY.hashCode(itemStack);
-        var ret = REGISTRY.get(hash);
+        final int stackSize = stack.getCount();
+        stack.setCount(1);
+
+        AESharedItemStack ret = REGISTRY.get(new AESharedItemStack(stack));
+
         if (ret != null) {
-            return ret;
+            stack.setCount(stackSize);
+            return ret.incrementReferenceCount();
         }
 
-        // computeIfAbsent is not feasible since new AESharedItemStack gets
-        // instantly GC'd when leaving the lambda.
-        var itemStackCopy = itemStack.copy();
-        itemStackCopy.setCount(1);
-        var sharedStack = new AESharedItemStack(itemStackCopy);
-        REGISTRY.put(hash, sharedStack);
-        return sharedStack;
+        ret = new AESharedItemStack(stack.copy());
+        stack.setCount(stackSize);
+
+        REGISTRY.add(ret);
+        return ret.incrementReferenceCount();
     }
+
+    static synchronized void unregisterStack(@Nonnull final AESharedItemStack stack) {
+        REGISTRY.remove(stack);
+    }
+
 }

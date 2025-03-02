@@ -13,6 +13,9 @@ import appeng.parts.misc.PartOreDicStorageBus;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
 import appeng.util.item.OreReference;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraftforge.items.IItemHandler;
@@ -66,7 +69,7 @@ public class ContainerOreDictStorageBus extends ContainerUpgradeable {
             return;
         }
 
-        Set<Integer> oreIDs = new HashSet<>();
+        IntSet oreIDs = new IntOpenHashSet();
 
         for (IAEItemStack itemStack : cellInv.getAvailableItems(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class).createList())) {
             OreReference ref = ((AEItemStack) itemStack).getOre().orElse(null);
@@ -78,8 +81,8 @@ public class ContainerOreDictStorageBus extends ContainerUpgradeable {
         String oreMatch = "(";
         String append = "";
 
-        for (Iterator<Integer> it = oreIDs.iterator(); it.hasNext(); ) {
-            int oreID = it.next();
+        for (IntIterator it = oreIDs.iterator(); it.hasNext(); ) {
+            int oreID = it.nextInt();
             if (it.hasNext()) {
                 append = ")|(";
             } else {

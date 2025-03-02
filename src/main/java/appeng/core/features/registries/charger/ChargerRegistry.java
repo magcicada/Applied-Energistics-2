@@ -21,22 +21,23 @@ package appeng.core.features.registries.charger;
 
 import appeng.api.features.IChargerRegistry;
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
 import net.minecraft.item.Item;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
-import java.util.IdentityHashMap;
-import java.util.Map;
 
 
 public class ChargerRegistry implements IChargerRegistry {
     private static final double DEFAULT_CHARGE_RATE = 160d;
     private static final double CAPPED_CHARGE_RATE = 16000d;
 
-    private final Map<Item, Double> chargeRates;
+    private final Reference2DoubleMap<Item> chargeRates;
 
     public ChargerRegistry() {
-        this.chargeRates = new IdentityHashMap<>();
+        this.chargeRates = new Reference2DoubleOpenHashMap<>();
+        this.chargeRates.defaultReturnValue(DEFAULT_CHARGE_RATE);
     }
 
     @Override
@@ -44,7 +45,7 @@ public class ChargerRegistry implements IChargerRegistry {
     public double getChargeRate(@Nonnull Item item) {
         Preconditions.checkNotNull(item);
 
-        return this.chargeRates.getOrDefault(item, DEFAULT_CHARGE_RATE);
+        return this.chargeRates.getDouble(item);
     }
 
     @Override

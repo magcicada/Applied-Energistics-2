@@ -35,6 +35,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.me.storage.ItemWatcher;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,8 +45,8 @@ import java.util.Map.Entry;
 
 public class NetworkMonitor<T extends IAEStack<T>> implements IMEMonitor<T> {
     @Nonnull
-    private static final HashMap<IActionSource, LinkedList<NetworkMonitor<?>>> src2MonitorsMap = new HashMap<>();
-    private static final Set<IActionSource> nestingSources = new HashSet<>();
+    private static final Object2ObjectMap<IActionSource, LinkedList<NetworkMonitor<?>>> src2MonitorsMap = new Object2ObjectOpenHashMap<>();
+    private static final Set<IActionSource> nestingSources = new ObjectOpenHashSet<>();
 
     protected boolean wasNested = false;
     protected boolean isNested = false;

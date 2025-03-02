@@ -21,6 +21,7 @@ package appeng.container.implementations;
 
 import appeng.api.config.Actionable;
 import appeng.api.config.PowerMultiplier;
+import appeng.api.features.IWirelessTermHandler;
 import appeng.api.implementations.IUpgradeableCellContainer;
 import appeng.api.implementations.guiobjects.IPortableCell;
 import appeng.api.networking.security.IActionHost;
@@ -65,6 +66,11 @@ public class ContainerMEPortableTerminal extends ContainerMEMonitorable implemen
             this.slot = -1;
             this.lockPlayerInventorySlot(ip.currentItem);
         }
+//        for (int i = 0; i < ip.mainInventory.size(); i++) {
+//            if (ip.mainInventory.get(i).getItem() instanceof IWirelessTermHandler) {
+//                this.lockPlayerInventorySlot(i);
+//            }
+//        }
 
         this.bindPlayerInventory(ip, 0, 0);
 
@@ -148,6 +154,15 @@ public class ContainerMEPortableTerminal extends ContainerMEMonitorable implemen
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
         if (slotId >= 0 && slotId < this.inventorySlots.size()) {
+            if (getSlot(slotId).getStack().getItem() instanceof IWirelessTermHandler) {
+                return ItemStack.EMPTY;
+            }
+            if (clickTypeIn == ClickType.SWAP && dragType >= 0 && dragType < 9) {
+                if (getSlot(dragType).getStack().getItem() instanceof IWirelessTermHandler) {
+                    return ItemStack.EMPTY;
+                }
+            }
+
             if (clickTypeIn == ClickType.PICKUP && dragType == 1) {
                 if (this.inventorySlots.get(slotId) == magnetSlot) {
                     ItemStack itemStack = magnetSlot.getStack();

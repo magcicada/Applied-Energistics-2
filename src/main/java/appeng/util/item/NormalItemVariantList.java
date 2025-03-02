@@ -44,7 +44,7 @@ class NormalItemVariantList extends ItemVariantList {
      */
     @Override
     public Collection<IAEItemStack> findFuzzy(IAEItemStack filter, FuzzyMode fuzzy) {
-        return this.getRecords().values();
+        return this.records.values();
     }
 
 }

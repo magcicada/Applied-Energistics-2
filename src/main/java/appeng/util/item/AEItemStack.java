@@ -349,4 +349,10 @@ public class AEItemStack extends AEStack<IAEItemStack> implements IAEItemStack {
         return false;
     }
 
+    @Override
+    @SuppressWarnings("deprecation")
+    protected void finalize() {
+        sharedStack.decrementReferenceCount();
+    }
+
 }

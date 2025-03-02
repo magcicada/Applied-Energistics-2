@@ -147,8 +147,6 @@ public class ToolNetworkTool extends AEBaseItem implements IGuiItem, IAEWrench, 
                 }
 
                 return true;
-            } else {
-                b.onBlockActivated(w, pos, w.getBlockState(pos), p, hand, side, hitX, hitY, hitZ);
             }
         } else {
             Platform.openGUI(p, null, AEPartLocation.INTERNAL, GuiBridge.GUI_NETWORK_TOOL);

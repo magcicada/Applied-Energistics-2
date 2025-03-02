@@ -94,7 +94,12 @@ public class PathGridCache implements IPathingGrid {
                 this.setChannelsByBlocks(nodes * used);
                 this.setChannelPowerUsage(this.getChannelsByBlocks() / 128.0);
 
-                this.myGrid.getPivot().beginVisit(new AdHocChannelUpdater(used));
+                IGridNode pivot = this.myGrid.getPivot();
+                //TODO: why NPE?
+                //noinspection ConstantValue
+                if (pivot != null) {
+                    pivot.beginVisit(new AdHocChannelUpdater(used));
+                }
             } else if (this.controllerState == ControllerState.CONTROLLER_CONFLICT) {
                 this.ticksUntilReady = 20;
                 this.myGrid.getPivot().beginVisit(new AdHocChannelUpdater(0));

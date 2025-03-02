@@ -257,6 +257,7 @@ gui.appliedenergistics2.Nothing=Nothing
 gui.appliedenergistics2.CraftingToastDone=Crafting Done!
 gui.appliedenergistics2.CraftingToastCancelled=Crafting Cancelled!
 gui.appliedenergistics2.Sticky=Sticky
+gui.appliedenergistics2.PatternEncoder=Encoded by %s
 gui.appliedenergistics2.FluidTerminal=Fluid Terminal
 gui.appliedenergistics2.CraftingLock=Crafting is locked
 gui.appliedenergistics2.NoneLock=Crafting is unlocked

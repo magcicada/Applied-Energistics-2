@@ -23,6 +23,7 @@ import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridCache;
 import appeng.api.networking.IGridCacheRegistry;
 import appeng.core.AELog;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -43,8 +44,8 @@ public final class GridCacheRegistry implements IGridCacheRegistry {
     }
 
     @Override
-    public HashMap<Class<? extends IGridCache>, IGridCache> createCacheInstance(final IGrid g) {
-        final HashMap<Class<? extends IGridCache>, IGridCache> map = new HashMap<>();
+    public Map<Class<? extends IGridCache>, IGridCache> createCacheInstance(final IGrid g) {
+        final Map<Class<? extends IGridCache>, IGridCache> map = new Reference2ObjectOpenHashMap<>();
 
         for (final Class<? extends IGridCache> iface : this.caches.keySet()) {
             try {

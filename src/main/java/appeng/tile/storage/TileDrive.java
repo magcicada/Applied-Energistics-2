@@ -45,6 +45,7 @@ import appeng.util.Platform;
 import appeng.util.inv.InvOperation;
 import appeng.util.inv.filter.IAEItemFilter;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.items.IItemHandler;
@@ -81,7 +82,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
         this.mySrc = new MachineSource(this);
         this.getProxy().setFlags(GridFlags.REQUIRE_CHANNEL);
         this.inv.setFilter(new CellValidInventoryFilter());
-        this.inventoryHandlers = new IdentityHashMap<>();
+        this.inventoryHandlers = new Reference2ObjectOpenHashMap<>();
     }
 
     @Override

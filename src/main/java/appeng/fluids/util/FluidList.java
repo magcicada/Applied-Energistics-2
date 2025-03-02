@@ -22,13 +22,14 @@ package appeng.fluids.util;
 import appeng.api.config.FuzzyMode;
 import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IItemList;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import java.util.*;
 
 
 public final class FluidList implements IItemList<IAEFluidStack> {
 
-    private final Map<IAEFluidStack, IAEFluidStack> records = new HashMap<>();
+    private final Map<IAEFluidStack, IAEFluidStack> records = new Object2ObjectOpenHashMap<>();
 
     @Override
     public void add(final IAEFluidStack option) {

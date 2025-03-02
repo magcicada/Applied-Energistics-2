@@ -73,10 +73,14 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.event.world.ChunkEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -286,6 +290,29 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
                 this.resetCache(false);
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onChunkUnLoad(final ChunkEvent.Unload event) {
+        TileEntity self = this.getHost().getTile();
+        ChunkPos targetChunkPos = new ChunkPos(self.getPos().offset(this.getSide().getFacing()));
+        if (targetChunkPos.equals(event.getChunk().getPos())) {
+            this.handlerHash = 0;
+            this.handler = null;
+            resetCache(true);
+        }
+    }
+
+    @Override
+    public void removeFromWorld() {
+        super.removeFromWorld();
+        MinecraftForge.EVENT_BUS.unregister(this);
+    }
+
+    @Override
+    public void addToWorld() {
+        super.addToWorld();
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @Override

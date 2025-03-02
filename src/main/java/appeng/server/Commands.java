@@ -21,10 +21,13 @@ package appeng.server;
 
 import appeng.server.subcommands.ChunkLogger;
 import appeng.server.subcommands.Supporters;
+import appeng.server.subcommands.PerfTracker;
 
 
 public enum Commands {
-    Chunklogger(4, new ChunkLogger()), Supporters(0, new Supporters());
+    Chunklogger(4, new ChunkLogger()),
+    Supporters(0, new Supporters()),
+    PerfTracker(0, new PerfTracker());
 
     public final int level;
     public final ISubCommand command;

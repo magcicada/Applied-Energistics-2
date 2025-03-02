@@ -31,6 +31,7 @@ import appeng.api.networking.ticking.ITickManager;
 import appeng.api.util.AEColor;
 import appeng.api.util.DimensionalCoord;
 import appeng.api.util.IOrientable;
+import appeng.core.AELog;
 import appeng.core.worlddata.WorldData;
 import appeng.hooks.TickHandler;
 import appeng.me.GridAccessException;
@@ -90,6 +91,10 @@ public class AENetworkProxy implements IGridBlock {
 
     public void validate() {
         if (this.gp instanceof AEBaseTile) {
+            if (!gp.getLocation().getWorld().isRemote && Platform.isClient()) {
+                AELog.warn("Client called validate() on Server world.");
+                AELog.warn(new Exception());
+            }
             TickHandler.INSTANCE.addInit((AEBaseTile) this.gp);
         }
     }

@@ -20,8 +20,10 @@ package appeng.util.item;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 final class AESharedItemStack {
@@ -29,6 +31,8 @@ final class AESharedItemStack {
     private final ItemStack itemStack;
     private final int itemDamage;
     private final int hashCode;
+
+    private final AtomicInteger referenceCount = new AtomicInteger();
 
     public AESharedItemStack(final ItemStack itemStack) {
         this(itemStack, itemStack.getItemDamage());
@@ -46,6 +50,17 @@ final class AESharedItemStack {
 
         // Ensure this is always called last.
         this.hashCode = this.makeHashCode();
+    }
+
+    AESharedItemStack incrementReferenceCount() {
+        this.referenceCount.decrementAndGet();
+        return this;
+    }
+
+    void decrementReferenceCount() {
+        if (this.referenceCount.decrementAndGet() <= 0) {
+            AEItemStackRegistry.unregisterStack(this);
+        }
     }
 
     ItemStack getDefinition() {
@@ -66,22 +81,53 @@ final class AESharedItemStack {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof AESharedItemStack)) {
+        if (!(obj instanceof final AESharedItemStack other)) {
             return false;
         }
 
-        final AESharedItemStack other = (AESharedItemStack) obj;
         Preconditions.checkState(this.itemStack.getCount() == 1, "ItemStack#getCount() has to be 1");
-        Preconditions.checkArgument(other.getDefinition().getCount() == 1, "ItemStack#getCount() has to be 1");
+        Preconditions.checkArgument(other.itemStack.getCount() == 1, "ItemStack#getCount() has to be 1");
 
         if (this.itemStack == other.itemStack) {
             return true;
         }
-        return ItemStack.areItemStacksEqual(this.itemStack, other.itemStack);
+        return stackEquals(this.itemStack, other.itemStack);
+    }
+
+    private static boolean stackEquals(ItemStack stackA, ItemStack stackB) {
+        if (stackA.isEmpty() && stackB.isEmpty()) {
+            return true;
+        } else if (stackA.isEmpty() && !stackB.isEmpty()) {
+            return false;
+        } else if (stackA.getItem() != stackB.getItem()) {
+            return false;
+        } else if (stackA.getItemDamage() != stackB.getItemDamage()) {
+            return false;
+        }
+
+        NBTTagCompound stackATag = stackA.getTagCompound();
+        NBTTagCompound stackBTag = stackB.getTagCompound();
+
+        if (stackATag == null || stackATag.isEmpty()) {
+            if (stackBTag != null && !stackBTag.isEmpty()) {
+                return false; // stackA has no tag but stackB tag is not empty, is invalid.
+            }
+        } else {
+            if (stackBTag == null || stackBTag.isEmpty()) {
+                return false; // stackA has tag but stackB has no tag, is invalid.
+            }
+            if (!stackATag.equals(stackBTag)) {
+                return false; // Different tag, is invalid.
+            }
+        }
+        return stackA.areCapsCompatible(stackB);
     }
 
     private int makeHashCode() {
-        return Objects.hash(this.itemStack.getItem(), this.itemDamage, this.itemStack.hasTagCompound() ? this.itemStack.getTagCompound() : 0);
+        final NBTTagCompound tag = this.itemStack.getTagCompound();
+        final int combinedHashCode =  Long.hashCode(System.identityHashCode(this.itemStack.getItem()) & 0xFFFFFFFFL | (this.itemDamage & 0xFFFFFFFFL) << 32);
+        final int tagHashCode = tag != null && !tag.isEmpty() ? tag.hashCode() : 0;
+        return tagHashCode != 0 ? combinedHashCode ^ tagHashCode : combinedHashCode;
     }
 
 }

@@ -27,6 +27,7 @@ import appeng.api.util.IReadOnlyCollection;
 import appeng.core.worlddata.WorldData;
 import appeng.hooks.TickHandler;
 import appeng.util.ReadOnlyCollection;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -34,8 +35,8 @@ import java.util.Map.Entry;
 
 public class Grid implements IGrid {
     private final NetworkEventBus eventBus = new NetworkEventBus();
-    private final Map<Class<? extends IGridHost>, MachineSet> machines = new HashMap<>();
-    private final Map<Class<? extends IGridCache>, GridCacheWrapper> caches = new HashMap<>();
+    private final Map<Class<? extends IGridHost>, MachineSet> machines = new Reference2ObjectOpenHashMap<>();
+    private final Map<Class<? extends IGridCache>, GridCacheWrapper> caches = new Reference2ObjectOpenHashMap<>();
     private GridNode pivot;
     private int priority; // how import is this network?
     private GridStorage myStorage;
