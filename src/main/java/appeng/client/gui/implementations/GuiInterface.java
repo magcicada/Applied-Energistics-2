@@ -79,6 +79,7 @@ public class GuiInterface extends GuiUpgradeable {
             labelList.remove(this.lockReason);
         }
         this.lockReason = new GuiImgLabel(this.fontRenderer, guiLeft + 40, guiTop + 12, Settings.UNLOCK, LockCraftingMode.NONE);
+        this.lockReason.setVisibility(false);
         labelList.add(lockReason);
     }
 
@@ -90,14 +91,19 @@ public class GuiInterface extends GuiUpgradeable {
 
         if (this.UnlockMode != null) {
             this.UnlockMode.set(((ContainerInterface) this.cvb).getUnlockMode());
+
+            if (this.lockReason != null) {
+                if (this.UnlockMode.getCurrentValue() == LockCraftingMode.NONE) {
+                    this.lockReason.setVisibility(false);
+                } else {
+                    this.lockReason.setVisibility(true);
+                    this.lockReason.set(((ContainerInterface) this.cvb).getCraftingLockedReason());
+                }
+            }
         }
 
         if (this.interfaceMode != null) {
             this.interfaceMode.setState(((ContainerInterface) this.cvb).getInterfaceTerminalMode() == YesNo.YES);
-        }
-
-        if (this.lockReason != null) {
-            this.lockReason.set(((ContainerInterface) this.cvb).getCraftingLockedReason());
         }
 
         this.fontRenderer.drawString(this.getGuiDisplayName(GuiText.Interface.getLocal()), 8, 6, 4210752);
