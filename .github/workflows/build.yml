@@ -12,8 +12,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'zulu' # You can choose other OpenJDK distributions.
-      - name: Update Build Script (Before Build)
-        run: ./gradlew updateBuildScript
       - name: Build with Gradle
         run: ./gradlew build
       - name: Upload Artifact
