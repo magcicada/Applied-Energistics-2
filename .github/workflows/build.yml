@@ -11,7 +11,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'adopt' # You can choose other OpenJDK distributions.
+          distribution: 'zulu' # You can choose other OpenJDK distributions.
       - name: Update Build Script (Before Build)
         run: ./gradlew updateBuildScript
       - name: Build with Gradle
@@ -20,4 +20,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AE2-UEL
-          path: build/libs/*.jar # Make sure this path matches the location of your build artifacts
+          path: build/libs # Make sure this path matches the location of your build artifacts
