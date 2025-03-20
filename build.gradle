@@ -1243,7 +1243,7 @@ task createPom {
                     }
                 }
             }
-        }.writeTo(libsDir.path + "/" + project.archivesBaseName + "-" + project.version + ".pom")
+        }.writeTo(libsDir.path + "/" + project.modArchivesBaseName + "-" + project.modVersion + ".pom")
     }
 }
 
