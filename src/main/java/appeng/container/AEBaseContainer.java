@@ -961,9 +961,13 @@ public abstract class AEBaseContainer extends Container {
 
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, @NotNull EntityPlayer player) {
-        if (slotId >= 0 && clickTypeIn == ClickType.PICKUP) {
+        if (slotId >= 0) {
             final var slot = this.getSlot(slotId);
-            if (slot instanceof AppEngSlot appEngSlot) {
+            if (slot instanceof SlotDisabled) {
+                return ItemStack.EMPTY;
+            }
+
+            if (slot instanceof AppEngSlot appEngSlot && clickTypeIn == ClickType.PICKUP) {
                 var slotStack = slot.getStack();
                 var draggedStack = this.invPlayer.getItemStack();
 
