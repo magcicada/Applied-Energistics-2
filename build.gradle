@@ -1230,9 +1230,9 @@ task createPom {
     doLast {
         pom {
             project {
-                groupId project.group
-                artifactId project.archivesBaseName
-                version project.version
+                groupId project.modGroup
+                artifactId project.modArchivesBaseName
+                version project.modVersion
 
                 inceptionYear '2014'
                 licenses {
